@@ -8,8 +8,8 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { toast } from 'react-hot-toast';
 import { useMutation } from '@tanstack/react-query';
 import { z } from 'zod';
-import { ILoginFormData  , loginSchema } from '@/lib/schemas/acc';
-import { loginUser } from '../api/services/auth';
+import { ILoginFormData   } from '@/lib/schemas/acc';
+import { loginUser } from '@/app/services/auth';
 
 
 export default function Login() {
@@ -42,8 +42,8 @@ const initialFormData: ILoginFormData = {
     e.preventDefault();
     
     try {
-      const validatedData = loginSchema.parse(formData);
-      mutation.mutate(validatedData);
+      // const validatedData = loginSchema.parse(formData);
+      // mutation.mutate(validatedData);
     } catch (error) {
       if (error instanceof z.ZodError) {
         error.issues.forEach((issue) => {
