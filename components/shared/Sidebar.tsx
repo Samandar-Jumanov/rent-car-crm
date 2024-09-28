@@ -1,29 +1,23 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { Home, Settings, Users, Car, Package, Palette, Star, HelpCircle, Sun, Moon, LogOut, Menu, X } from 'lucide-react';
+import React, { useState} from 'react';
+import { Home, Settings, Users, Car, Package, Palette, Star, HelpCircle,  LogOut, Menu, X } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
-import { useSidebar } from "@/lib/hooks/useSidebar";
 import { useAuthSession } from '@/lib/hooks/useAuth';
 
 const Sidebar = () => {
-  const { theme, toggleTheme } = useSidebar();
   const { status, logout } = useAuthSession();
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
-  useEffect(() => {
-    if (mounted) {
-      document.documentElement.classList.toggle('dark', theme === 'dark');
-    }
-  }, [theme, mounted]);
+  if(pathname === "/login") {
+    return null;
+  }
+
+
 
   const navItems = [
     { icon: Home, label: 'Home', href: '/' },
@@ -36,13 +30,12 @@ const Sidebar = () => {
     { icon: Settings, label: 'Settings', href: '/settings' },
   ];
 
-  if (!mounted) return null;
 
   return (
     <>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-blue-800 dark:bg-blue-900 rounded-md shadow-md"
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-indigo-800 dark:bg-blue-900 rounded-md shadow-md"
       >
         {isOpen ? <X size={24} className="text-white" /> : <Menu size={24} className="text-white" />}
       </button>
@@ -65,14 +58,6 @@ const Sidebar = () => {
           </nav>
 
           <div className="px-3 mt-auto">
-            <Button 
-              onClick={toggleTheme} 
-              variant="outline" 
-              className="w-full mb-2 justify-start bg-blue-700 hover:bg-blue-600 border-blue-600 text-blue-100"
-            >
-              {theme === 'dark' ? <Sun className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />}
-              {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-            </Button>
             {status === 'authenticated' && (
               <Button 
                 onClick={logout} 

@@ -1,9 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit';
 import sidebarReducer from './slices/sidebar';
+import rightSideBar from './slices/rightSideBar';
 
 export const store = configureStore({
   reducer: {
     sidebar: sidebarReducer,
+    rightSideBar
   },
 });
 
