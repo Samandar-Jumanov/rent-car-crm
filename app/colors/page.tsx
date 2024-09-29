@@ -1,41 +1,63 @@
-import { Button } from "@/components/ui/button"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+"use client"
 
-export default function Brend() {
+import React from 'react';
+import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Pencil, Trash2 } from "lucide-react";
+import PageContainer from '@/components/shared/PageContainer';  
+
+export default function Color() {
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="bg-white shadow rounded-lg overflow-hidden">
-        <div className="p-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-            <h1 className="text-2xl font-bold mb-4 sm:mb-0">Ranglar </h1>
-            <Button>+ Rang yaratish</Button>
-          </div>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[100px]">№</TableHead>
-                  <TableHead>Nomi</TableHead>
-                  <TableHead className="w-[100px]">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                <TableRow>
-                  <TableCell>2</TableCell>
-                  <TableCell>Qora</TableCell>
-                  <TableCell>
-                    {/* Add edit and delete icons */}
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-          </div>
-        </div>
+    <PageContainer
+      title="Ranglar"
+      action={<Button className="w-full sm:w-auto">+ Rang yaratish</Button>}
+    >
+      
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[100px]">№</TableHead>
+              <TableHead>Rang nomi</TableHead>
+              <TableHead className="w-[120px]">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow>
+              <TableCell>1</TableCell>
+              <TableCell>Qora</TableCell>
+              <TableCell>
+                <div className="flex space-x-2">
+                  <Button variant="outline" size="icon">
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button variant="destructive" size="icon">
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>2</TableCell>
+              <TableCell>Qizil</TableCell>
+              <TableCell>
+                <div className="flex space-x-2">
+                  <Button variant="outline" size="icon">
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button variant="destructive" size="icon">
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
       </div>
-      {/* Add pagination component */}
+      {/* Pagination component */}
       <div className="mt-4 flex justify-end">
-        {/* Pagination component goes here */}
+        {/* Add your pagination component here */}
       </div>
-    </div>
-  )
+    </PageContainer>
+  );
 }
