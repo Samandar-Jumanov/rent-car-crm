@@ -1,18 +1,28 @@
 "use client"
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Pencil, Trash2 } from "lucide-react";
 import PageContainer from '@/components/shared/PageContainer';  
+import { useBar } from '@/lib/hooks/useRightSide';
+import RightSidebar from '@/components/shared/RightSidebar';
+import { CreateColor } from '@/components/forms/colors';
 
 export default function Color() {
+
+  const { toggleBar  } = useBar()
+  const [ color , setColor ] = useState("")
+
+
+  const submit = ( ) => {
+      console.log({ color })
+  }
   return (
     <PageContainer
       title="Ranglar"
-      action={<Button className="w-full sm:w-auto">+ Rang yaratish</Button>}
+      action={<Button className="w-full sm:w-auto" onClick={toggleBar}>+ Rang yaratish</Button>}
     >
-      
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
@@ -58,6 +68,10 @@ export default function Color() {
       <div className="mt-4 flex justify-end">
         {/* Add your pagination component here */}
       </div>
+
+       <RightSidebar onSubmit={submit}>
+              <CreateColor  setColor={setColor}/>
+       </RightSidebar>
     </PageContainer>
   );
 }

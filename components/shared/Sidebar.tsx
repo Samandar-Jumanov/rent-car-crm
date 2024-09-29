@@ -1,7 +1,22 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Home, Settings, Users, Car, Package, Palette, Star, HelpCircle, LogOut, Menu, X , FeatherIcon } from 'lucide-react';
+import { 
+  Home, 
+  Settings, 
+  Users, 
+  Car, 
+  Package, 
+  Palette, 
+  Star, 
+  LogOut, 
+  Menu, 
+  X, 
+  CarFront,
+  Building2,
+  FileText,
+  Image,
+} from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
@@ -18,13 +33,15 @@ const Sidebar = () => {
 
   const navItems = [
     { icon: Home, label: 'Home', href: '/' },
-    { icon: Car, label: 'Rent Cars', href: '/rent-cars' },
+    { icon: CarFront, label: 'Rent Cars', href: '/rent-cars' },
     { icon: Users, label: 'Clients', href: '/clients' },
     { icon: Star, label: 'Reviews', href: '/reviews' },
-    { icon: Package, label: 'Brands', href: '/brands' },
-    { icon: HelpCircle, label: 'Model', href: '/model' },
+    { icon: Building2, label: 'Brands', href: '/brands' },
+    { icon: Car, label: 'Model', href: '/model' },
     { icon: Palette, label: 'Colors', href: '/colors' },
-    { icon: FeatherIcon, label: 'Features', href: '/features' },
+    { icon: Package, label: 'Features', href: '/features' },
+    { icon: Image, label: 'Bannerlar', href: '/banners' },
+    { icon: FileText, label: 'Shablonlar', href: '/templates' },
     { icon: Settings, label: 'Settings', href: '/settings' },
   ];
 
@@ -32,21 +49,21 @@ const Sidebar = () => {
     <>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-indigo-800 dark:bg-blue-900 rounded-md shadow-md"
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-blue-600 rounded-md shadow-md"
         aria-label={isOpen ? "Close menu" : "Open menu"}
       >
         {isOpen ? <X size={24} className="text-white" /> : <Menu size={24} className="text-white" />}
       </button>
 
-      <aside className={`fixed inset-y-0 left-0 z-40 w-64 bg-blue-800 dark:bg-blue-900 shadow-xl transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`fixed inset-y-0 left-0 z-40 w-64 bg-blue-700 shadow-xl transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="flex flex-col h-full py-6">
           <nav className="flex-1 overflow-y-auto px-3">
             {navItems.map((item) => (
               <Link key={item.href} href={item.href}>
                 <span className={`flex items-center px-4 py-3 mb-2 rounded-lg transition-colors duration-150 ease-in-out
                   ${pathname === item.href
-                    ? 'bg-blue-600 text-white dark:bg-blue-700'
-                    : 'text-blue-100 hover:bg-blue-700 dark:hover:bg-blue-800'
+                    ? 'bg-blue-800 text-white'
+                    : 'text-blue-100 hover:bg-blue-600'
                   }`}>
                   <item.icon className="w-5 h-5 mr-3" />
                   <span className="text-sm font-medium">{item.label}</span>

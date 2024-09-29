@@ -1,16 +1,26 @@
 "use client"
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Pencil, Trash2 } from "lucide-react";
 import PageContainer from '@/components/shared/PageContainer';  
+import RightSidebar from '@/components/shared/RightSidebar';
+import { CreateBrand } from '@/components/forms/brand';
+import { useBar } from '@/lib/hooks/useRightSide';
 
 export default function Brend() {
+  const [ name , setName ] = useState("")
+  const { toggleBar} = useBar()
+
+  const submit = ( ) => {
+       console.log({ name })
+  }
+
   return (
     <PageContainer
       title="Brend"
-      action={<Button className="w-full sm:w-auto">+ Akkount yaratish</Button>}
+      action={<Button className="w-full sm:w-auto" onClick={toggleBar}>+ Brand yaratish</Button>}
     >
       
       <div className="overflow-x-auto">
@@ -58,7 +68,9 @@ export default function Brend() {
       <div className="mt-4 flex justify-end">
         {/* Add your pagination component here */}
       </div>
-      
+        <RightSidebar onSubmit={submit}  title='Brand yaratish'>
+              <CreateBrand  setName={setName}/>
+        </RightSidebar>
     </PageContainer>
   );
 }

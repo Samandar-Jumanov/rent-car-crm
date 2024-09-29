@@ -6,23 +6,23 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Pencil, Trash2 } from "lucide-react";
 import PageContainer from '@/components/shared/PageContainer';  
 import RightSidebar from '@/components/shared/RightSidebar';
-import { CreateModel } from '@/components/forms/model';
 import { useBar } from '@/lib/hooks/useRightSide';
+import { CreateBanner } from '@/components/forms/feature';
 
-export default function Model() {
-
+export default function Brend() {
+  const [ active , setActive ] = useState(false);
   const [ name , setName ] = useState("")
-  const { toggleBar } = useBar()
+  const [ logo , setLogo ] = useState("")
+  const { toggleBar} = useBar()
 
 
   const submit = ( ) => {
-       console.log({ name })
+      console.log({ name , active , logo})
   }
-
   return (
     <PageContainer
-      title="Model"
-      action={<Button className="w-full sm:w-auto" onClick={toggleBar}>+ Model yaratish</Button>}
+      title="Banner"
+      action={<Button className="w-full sm:w-auto" onClick={toggleBar}>+ Banner yaratish</Button>}
     >
       
       <div className="overflow-x-auto">
@@ -37,21 +37,7 @@ export default function Model() {
           <TableBody>
             <TableRow>
               <TableCell>1</TableCell>
-              <TableCell>Nexia 2 </TableCell>
-              <TableCell>
-                <div className="flex space-x-2">
-                  <Button variant="outline" size="icon">
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button variant="destructive" size="icon">
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell>2</TableCell>
-              <TableCell>Gentra</TableCell>
+              <TableCell>Banner 1</TableCell>
               <TableCell>
                 <div className="flex space-x-2">
                   <Button variant="outline" size="icon">
@@ -70,11 +56,9 @@ export default function Model() {
       <div className="mt-4 flex justify-end">
         {/* Add your pagination component here */}
       </div>
-
-      <RightSidebar onSubmit={submit}>
-                  <CreateModel  setName={setName}/>
-      </RightSidebar>
-      
+        <RightSidebar onSubmit={submit}  title='Banner yaratish'>
+              <CreateBanner setActive={setActive} setName={setName} setLogo={setLogo} />
+        </RightSidebar>
     </PageContainer>
   );
 }

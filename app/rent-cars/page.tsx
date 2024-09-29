@@ -1,6 +1,6 @@
 "use client"
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Pencil, Trash2 } from "lucide-react";
@@ -9,6 +9,16 @@ import RightSidebar from '@/components/shared/RightSidebar';
 import { RenatCarCreate } from '@/components/forms/rent-car';
 const CarRentalManagementPage = () => {
   const { toggleBar } = useBar();
+  const [ name , setName ] = useState("");
+  const [ phone, setPhone ] = useState("");
+  const [ address, setAddress ] = useState("");
+  const [ password , setPassword ] = useState("");
+  const [ logo , setLogo ] = useState("")
+
+
+  const submit = ( ) => {
+       console.log({ name , phone , address , password ,  logo})
+  }
 
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-gray-100">
@@ -52,8 +62,14 @@ const CarRentalManagementPage = () => {
         </div>
       </main>
       
-      <RightSidebar onSubmit={() => {}}>
-          < RenatCarCreate />
+      <RightSidebar onSubmit={submit} title='Yangi yaratish'>
+          < RenatCarCreate 
+           setPhone={setPhone}
+           setAddress={setAddress}
+           setName={setName}
+           setPassword={setPassword}
+          setLogo={setLogo}
+          />
       </RightSidebar>
     </div>
   );

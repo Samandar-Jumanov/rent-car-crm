@@ -1,16 +1,32 @@
 "use client"
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Pencil, Trash2 } from "lucide-react";
 import PageContainer from '@/components/shared/PageContainer';  
+import RightSidebar from '@/components/shared/RightSidebar';
+import { CreateFeature } from '@/components/forms/features';
+import { useBar } from '@/lib/hooks/useRightSide';
 
 export default function Features() {
+
+  const [ active , setActive ] = useState(false);
+  const [ name , setName ] = useState("")
+  const [ logo , setLogo ] = useState("")
+
+  const {  toggleBar} = useBar()
+
+
+
+  const submit = ( ) => {
+       console.log({ name , logo , active})
+  }
+  
   return (
     <PageContainer
       title="Xususiyatlar"
-      action={<Button className="w-full sm:w-auto">+ Xususiyat yaratish</Button>}
+      action={<Button className="w-full sm:w-auto" onClick={toggleBar}>+ Xususiyat yaratish</Button>}
     >
       
       <div className="overflow-x-auto">
@@ -59,6 +75,9 @@ export default function Features() {
         {/* Add your pagination component here */}
       </div>
       
+      <RightSidebar onSubmit={submit} title="Xususiyat yaratish">
+                        <CreateFeature setActive={setActive} setName={setName} setLogo={setLogo} />
+      </RightSidebar>
     </PageContainer>
   );
 }
