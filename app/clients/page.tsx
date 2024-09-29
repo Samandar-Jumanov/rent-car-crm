@@ -16,7 +16,7 @@ const data = Array(10).fill(null).map((_, index) => ({
   date: "6.09.2024, 11:34"
 }));
 
-const Dashboard = () => {
+const Clients = () => {
   const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
   const { toggleBar } = useBar()
 
@@ -29,7 +29,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 relative">
+    <div className="container mx-auto px-4 py-8 relative z-10">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Mijozlar</h1>
         {selectedUsers.length > 0 && (
@@ -69,7 +69,7 @@ const Dashboard = () => {
                     <TableCell>
                       <div className="flex items-center space-x-2">
                         <Avatar className="h-8 w-8">
-                          <AvatarImage src="/placeholder-avatar.jpg" alt={user.name} />
+                          <AvatarImage alt={user.name} />
                           <AvatarFallback>{user.name[0]}</AvatarFallback>
                         </Avatar>
                         <span>{user.name}</span>
@@ -114,4 +114,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default Clients;
