@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Home, 
   Settings, 
@@ -23,13 +23,15 @@ import { Button } from "@/components/ui/button";
 import { useAuthSession } from '@/lib/hooks/useAuth';
 
 const Sidebar = () => {
-  const { status, logout } = useAuthSession();
+  const { logout } = useAuthSession();
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
 
   if (pathname === "/login") {
     return null;
   }
+
+  
 
   const navItems = [
     { icon: Home, label: 'Home', href: '/' },
@@ -73,7 +75,6 @@ const Sidebar = () => {
           </nav>
 
           <div className="px-3 mt-auto">
-            {status === 'authenticated' && (
               <Button
                 onClick={logout}
                 variant="destructive"
@@ -82,7 +83,6 @@ const Sidebar = () => {
                 <LogOut className="mr-2 h-4 w-4" />
                 Logout
               </Button>
-            )}
           </div>
         </div>
       </aside>
