@@ -32,9 +32,10 @@ const Client: React.FC = () => {
     );
   };
 
-  const handleBlockUser = async (): Promise<void> => {
+  const handleBlockUser = async (userId : string ): Promise<void> => {
     try {
-      await blockUser();
+     const response =   await blockUser(userId);
+     console.log({ response })
       refetch();
     } catch (error) {
       console.error('Error blocking user:', error);
@@ -53,6 +54,10 @@ const Client: React.FC = () => {
   const users = data?.responseObject || [];
   const activeUsers = users.filter(user => !user.isBlocked);
   const blockedUsers = users.filter(user => user.isBlocked);
+
+  console.log({
+         users 
+  })
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-100 lg:ml-64">

@@ -17,11 +17,10 @@ import { IRentCar } from '@/types/rent-car';
 
 export const RentCarTable: React.FC<{
   brands: IRentCar[];
-  onEdit: (brand: IRentCar) => void;
   onDelete: (id: string) => void;
   loading: boolean;
   setLoading: (value: boolean) => void;
-}> = ({ brands, onEdit, onDelete, loading, setLoading }) => {
+}> = ({ brands,  onDelete, loading, setLoading }) => {
   const [deletingBrandId, setDeletingBrandId] = useState<string | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
@@ -86,7 +85,6 @@ export const RentCarTable: React.FC<{
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => onEdit(brand)}
                     className="p-1 hover:bg-blue-50"
                   >
                     <Pencil className="h-4 w-4 text-blue-600" />

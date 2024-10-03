@@ -15,7 +15,7 @@ export const createBrand = async (data: IRentCarFormData): Promise<IServiceRespo
     return response.data;
   };
   
- export  const updateBrand = async ({ id, data }: { id: string; data: IRentCarFormData }): Promise<IServiceResponse<IRentCar>> => {
+ export  const updateBrand = async (  id: string, data: IRentCarFormData ): Promise<IServiceResponse<IRentCar>> => {
     const response = await apiClient.put(`/brends/${id}`, data);
     return response.data;
   };

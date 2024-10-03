@@ -1,33 +1,26 @@
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
-import React   from 'react';
-
-type IRentCarCreateProps = {
-  setName: (value: string) => void
-  
+interface CarBrandFormProps {
+  brandName: string;
+  onBrandNameChange: (value: string) => void;
 }
 
-export const CreateBrand: React.FC<IRentCarCreateProps> = ({
-  setName,
-}) => {
-
+export function CarBrandForm({ brandName, onBrandNameChange }: CarBrandFormProps) {
   return (
-    <div className="space-y-6">
-      <div>
-        <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-          Nomi
-        </label>
-        <div className="mt-1">
-          <input
-            id="name"
-            name="name"
-            type="text"
-            required
-            className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all duration-300 hover:border-indigo-400 text-gray-900 bg-white"
-            placeholder="Brand nomi"
-            onChange={(e) => setName(e.target.value)}
-          />
-        </div>
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="brandName">Brand Name</Label>
+        <Input
+          id="brandName"
+          placeholder="Enter brand name"
+          value={brandName}
+          onChange={(e) => onBrandNameChange(e.target.value)}
+        />
       </div>
+      <p className="text-sm text-gray-500">
+        Enter the name of the car brand. This will be displayed in the brands list and used for categorizing cars.
+      </p>
     </div>
   );
-};
+}

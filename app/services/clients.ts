@@ -2,11 +2,21 @@
 import apiClient from "@/utils/axios";
 
 export async function getAllUsers() {
-         const response = await apiClient.get(`/users?role=AGENT`);
+         const response = await apiClient.get(`/users?role=AGENT?status=active`);
          return response.data;
+}
+    
+
+export async function blockUser (userId : string ){
+    const response = await apiClient.post(`/users/admin/block/${userId}`);
+    return response.data;
 }
 
 
+export async function unblockUser  (userId : string ){
+    const response = await apiClient.delete(`/users/admin/block/${userId}`);
+    return response.data;
+}
 
 
-export async function blockUser (){}
+export const getBlockedUsers = async() =>  {}

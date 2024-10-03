@@ -7,7 +7,7 @@ import { PlusCircle } from "lucide-react";
 import PageContainer from '@/components/shared/PageContainer';
 import RightSidebar from '@/components/shared/RightSidebar';
 import { useBar } from '@/lib/hooks/useRightSide';
-import { getAllBrands, createBrand , deleteBrand } from '../services/rent-cars';
+import { getAllBrands, createBrand, deleteBrand } from '../services/rent-cars';
 import { RentCarTableSkeleton } from '@/components/skeletons/rent-car.skeleton';
 import { RentCarForm } from '@/components/forms/rent-car';
 import { EmptyState } from '@/components/empty/rent-car.empty';
@@ -15,7 +15,6 @@ import { RentCarTable } from '@/components/tables/rent-car.table';
 import { IRentCar } from '@/types/rent-car';
 import { IServiceResponse } from '@/types/server.response';
 import toast from 'react-hot-toast';
-
 
 function RentCars() {
   const queryClient = useQueryClient();
@@ -41,27 +40,27 @@ function RentCars() {
       if (response.success) {
         queryClient.invalidateQueries({ queryKey: ['brands'] });
         toast.success('Brand created successfully');
+        toggleBar();
       }
-     
     },
     onError: (error) => {
       toast.error(error.message)
     }
   });
+
+
+
  
   const deleteMutation = useMutation({
     mutationFn: deleteBrand,
     onSuccess: (response) => {
-      console.log({ response });
       if (response.success) {
         queryClient.invalidateQueries({ queryKey: ['brands'] });
         toast.success('Brand deleted successfully');
       }
-
-      if( typeof response === 'string') {
+      if (typeof response === 'string') {
         toast.error("404 not found");
-}
-
+      }
     },
     onError: () => {
       toast.error('Failed to delete brand');
@@ -88,8 +87,7 @@ function RentCars() {
       password: formData.password,
       logo: formData.logo,
     };
-
-    createMutation.mutate(data);
+      createMutation.mutate(data);
   };
 
   const handleInputChange = (name: string, value: string) => {
@@ -122,17 +120,6 @@ function RentCars() {
           ) : (
             <RentCarTable 
               brands={brands}
-              onEdit={(brand) => {
-                setEditingBrand(brand);
-                setFormData({
-                  name: brand.brendName,
-                  phone: brand.ownerNumber,
-                  address: brand.address,
-                  password: '',
-                  logo: brand.logo,
-                });
-                toggleBar();
-              }}
               onDelete={(id) => deleteMutation.mutate(id)}
               loading={deleteMutation.isPending}
               setLoading={(value) => {console.log(value)}} 
@@ -144,7 +131,7 @@ function RentCars() {
       <RightSidebar 
         title={editingBrand ? 'Rent carni tahrirlash' : 'Yangi yaratish'}
         onSubmit={handleSubmit}
-        loadingState={createMutation.isPending}
+        loadingState={createMutation.isPending }
       >
         <RentCarForm 
           formData={formData}

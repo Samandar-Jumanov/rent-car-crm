@@ -1,32 +1,23 @@
+import React from 'react';
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
-import React   from 'react';
-
-type IRentCarCreateProps = {
-  setName: (value: string) => void
-  
+interface ModelFormProps {
+  modelName: string;
+  setModelName: (value: string) => void;
 }
 
-export const CreateModel: React.FC<IRentCarCreateProps> = ({
-  setName,
-}) => {
-
+export const ModelForm: React.FC<ModelFormProps> = ({ modelName, setModelName }) => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div>
-        <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-          Nomi
-        </label>
-        <div className="mt-1">
-          <input
-            id="name"
-            name="name"
-            type="text"
-            required
-            className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all duration-300 hover:border-indigo-400 text-gray-900 bg-white"
-            placeholder="Model nomi"
-            onChange={(e) => setName(e.target.value)}
-          />
-        </div>
+        <Label htmlFor="modelName">Model Name</Label>
+        <Input
+          id="modelName"
+          value={modelName}
+          onChange={(e) => setModelName(e.target.value)}
+          placeholder="Enter model name"
+        />
       </div>
     </div>
   );

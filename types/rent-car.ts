@@ -26,4 +26,5 @@ export interface IRentCar {
     logo?: string;
     carDelivery?: any;
     payment?: any;
+    password : string
   }
