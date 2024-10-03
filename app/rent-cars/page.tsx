@@ -1,53 +1,36 @@
 "use client"
+
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
-import {PlusCircle } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import PageContainer from '@/components/shared/PageContainer';
 import RightSidebar from '@/components/shared/RightSidebar';
 import { useBar } from '@/lib/hooks/useRightSide';
-import apiClient from "@/utils/axios";
-import { getAllBrands } from '../services/rent-cars';
+import { getAllBrands, createBrand , deleteBrand } from '../services/rent-cars';
 import { RentCarTableSkeleton } from '@/components/skeletons/rent-car.skeleton';
 import { RentCarForm } from '@/components/forms/rent-car';
 import { EmptyState } from '@/components/empty/rent-car.empty';
 import { RentCarTable } from '@/components/tables/rent-car.table';
-import { IRentCar, IRentCarFormData } from '@/types/rent-car';
+import { IRentCar } from '@/types/rent-car';
 import { IServiceResponse } from '@/types/server.response';
+import toast from 'react-hot-toast';
 
 
-// Keep your existing API functions
-const createBrand = async (data: IRentCarFormData): Promise<IServiceResponse<IRentCar>> => {
-  const response = await apiClient.post('/brands', data);
-  return response.data;
-};
-
-const updateBrand = async ({ id, data }: { id: string; data: IRentCarFormData }): Promise<IServiceResponse<IRentCar>> => {
-  const response = await apiClient.put(`/brands/${id}`, data);
-  return response.data;
-};
-
-const deleteBrand = async (id: string): Promise<IServiceResponse<void>> => {
-  const response = await apiClient.delete(`/brands/${id}`);
-  return response.data;
-};
-
-
-
- function RentCars() {
+function RentCars() {
   const queryClient = useQueryClient();
   const { toggleBar } = useBar();
   const [editingBrand, setEditingBrand] = useState<IRentCar | null>(null);
-  
-  // Form state
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
-  const [password, setPassword] = useState("");
-  const [logo, setLogo] = useState("");
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    address: '',
+    password: '',
+    logo: '',
+  });
 
   // Queries
-  const { data: brandsResponse, isLoading, error } = useQuery<IServiceResponse<IRentCar[]>>({
+  const { data: brandsResponse, isLoading: brandsLoading, error: brandsError } = useQuery<IServiceResponse<IRentCar[]>>({
     queryKey: ['brands'],
     queryFn: getAllBrands,
   });
@@ -57,71 +40,70 @@ const deleteBrand = async (id: string): Promise<IServiceResponse<void>> => {
     onSuccess: (response) => {
       if (response.success) {
         queryClient.invalidateQueries({ queryKey: ['brands'] });
-        resetForm();
-        toggleBar();
+        toast.success('Brand created successfully');
       }
+     
     },
+    onError: (error) => {
+      toast.error(error.message)
+    }
   });
-
-  const updateMutation = useMutation({
-    mutationFn: updateBrand,
-    onSuccess: (response) => {
-      if (response.success) {
-        queryClient.invalidateQueries({ queryKey: ['brands'] });
-        resetForm();
-        toggleBar();
-      }
-    },
-  });
-
+ 
   const deleteMutation = useMutation({
     mutationFn: deleteBrand,
     onSuccess: (response) => {
+      console.log({ response });
       if (response.success) {
         queryClient.invalidateQueries({ queryKey: ['brands'] });
+        toast.success('Brand deleted successfully');
       }
+
+      if( typeof response === 'string') {
+        toast.error("404 not found");
+}
+
     },
+    onError: () => {
+      toast.error('Failed to delete brand');
+    }
   });
 
-  const resetForm = () => {
-    setName("");
-    setPhone("");
-    setAddress("");
-    setPassword("");
-    setLogo("");
-    setEditingBrand(null);
-  };
-
   const handleCreateClick = () => {
-    resetForm();
+    setEditingBrand(null);
+    setFormData({
+      name: '',
+      phone: '',
+      address: '',
+      password: '',
+      logo: '',
+    });
     toggleBar();
   };
 
-  // const handleSubmit = (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   const formData = {
-  //     brendName: name,
-  //     ownerNumber: phone,
-  //     address,
-  //     password,
-  //     logo,
-  //   };
+  const handleSubmit = () => {
+    const data = {
+      brendName: formData.name,
+      ownerNumber: formData.phone,
+      address: formData.address,
+      password: formData.password,
+      logo: formData.logo,
+    };
 
-  //   if (editingBrand) {
-  //     updateMutation.mutate({ id: editingBrand.id, data: formData });
-  //   } else {
-  //     createMutation.mutate(formData as any);
-  //   }
-  // };
+    createMutation.mutate(data);
+  };
 
-  if (isLoading) return  RentCarTableSkeleton;
-  if (error) return null;
+  const handleInputChange = (name: string, value: string) => {
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
 
-  const brands = brandsResponse?.data || [];
+  if (brandsLoading) return <RentCarTableSkeleton />;
+  if (brandsError) return <div className="text-center text-red-600 py-10">Error loading data</div>;
+
+  const brands = brandsResponse?.responseObject || [];
   const isEmpty = brands.length === 0;
 
   return (
-    <PageContainer
+    <PageContainer 
       title="Rent carlar"
       action={!isEmpty && (
         <Button 
@@ -129,12 +111,12 @@ const deleteBrand = async (id: string): Promise<IServiceResponse<void>> => {
           onClick={handleCreateClick}
         >
           <PlusCircle className="h-4 w-4 mr-2" />
-          Add Brand
+          + Rent car 
         </Button>
       )}
     >
       <div className="p-6 max-w-[1200px] mx-auto">
-        <div className="overflow-x-auto">
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           {isEmpty ? (
             <EmptyState onCreateClick={handleCreateClick} />
           ) : (
@@ -142,14 +124,18 @@ const deleteBrand = async (id: string): Promise<IServiceResponse<void>> => {
               brands={brands}
               onEdit={(brand) => {
                 setEditingBrand(brand);
-                setName(brand.brendName);
-                setPhone(brand.ownerNumber);
-                setAddress(brand.address);
-                setLogo(brand.logo);
+                setFormData({
+                  name: brand.brendName,
+                  phone: brand.ownerNumber,
+                  address: brand.address,
+                  password: '',
+                  logo: brand.logo,
+                });
                 toggleBar();
               }}
               onDelete={(id) => deleteMutation.mutate(id)}
-              isDeletePending={deleteMutation.isPending}
+              loading={deleteMutation.isPending}
+              setLoading={(value) => {console.log(value)}} 
             />
           )}
         </div>
@@ -157,25 +143,16 @@ const deleteBrand = async (id: string): Promise<IServiceResponse<void>> => {
 
       <RightSidebar 
         title={editingBrand ? 'Rent carni tahrirlash' : 'Yangi yaratish'}
-        onSubmit={( ) => {}}
+        onSubmit={handleSubmit}
+        loadingState={createMutation.isPending}
       >
         <RentCarForm 
-          setName={setName}
-          setPhone={setPhone}
-          setAddress={setAddress}
-          setPassword={setPassword}
-          setLogo={setLogo}
-          initialValues={editingBrand ? {
-            name: editingBrand.brendName,
-            phone: editingBrand.ownerNumber,
-            address: editingBrand.address,
-            logo: editingBrand.logo,
-          } : undefined}
+          formData={formData}
+          onInputChange={handleInputChange}
         />
       </RightSidebar>
     </PageContainer>
   );
 }
 
-
-export default RentCars
+export default RentCars;

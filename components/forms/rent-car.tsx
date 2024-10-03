@@ -1,42 +1,36 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 
-interface IBrandFormProps {
-  setName: (value: string) => void;
-  setPhone: (value: string) => void;
-  setAddress: (value: string) => void;
-  setPassword: (value: string) => void;
-  setLogo: (value: string) => void;
-  initialValues?: {
-    name?: string;
-    phone?: string;
-    address?: string;
-    logo?: string;
+interface IRentCarFormProps {
+  formData: {
+    name: string;
+    phone: string;
+    address: string;
+    password: string;
+    logo: string;
   };
+  onInputChange: (name: string, value: string) => void;
 }
 
-export const RentCarForm: React.FC<IBrandFormProps> = ({
-  setName,
-  setPhone,
-  setAddress,
-  setPassword,
-  setLogo,
-  initialValues
-}) => {
+export const RentCarForm: React.FC<IRentCarFormProps> = ({ formData, onInputChange }) => {
   const [showPassword, setShowPassword] = useState(false);
-  const [previewLogo, setPreviewLogo] = useState<string>(initialValues?.logo || "");
+  const [previewLogo, setPreviewLogo] = useState<string>(formData.logo || "");
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    onInputChange(name, value);
+  };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Show preview
       const objectUrl = URL.createObjectURL(file);
       setPreviewLogo(objectUrl);
 
       const reader = new FileReader();
       reader.onloadend = () => {
         const base64String = reader.result as string;
-        setLogo(base64String);
+        onInputChange('logo', base64String);
       };
       reader.readAsDataURL(file);
     }
@@ -61,7 +55,7 @@ export const RentCarForm: React.FC<IBrandFormProps> = ({
                 className="absolute -top-2 -right-2 rounded-full bg-red-100 p-1 text-red-600 hover:bg-red-200"
                 onClick={() => {
                   setPreviewLogo("");
-                  setLogo("");
+                  onInputChange('logo', "");
                 }}
               >
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -96,10 +90,10 @@ export const RentCarForm: React.FC<IBrandFormProps> = ({
             name="name"
             type="text"
             required
-            defaultValue={initialValues?.name}
+            value={formData.name}
             className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all duration-300 hover:border-indigo-400"
-            placeholder="Enter rent car  name"
-            onChange={(e) => setName(e.target.value)}
+            placeholder="Enter rent car name"
+            onChange={handleInputChange}
           />
         </div>
       </div>
@@ -114,10 +108,10 @@ export const RentCarForm: React.FC<IBrandFormProps> = ({
             name="phone"
             type="tel"
             required
-            defaultValue={initialValues?.phone}
+            value={formData.phone}
             className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all duration-300 hover:border-indigo-400"
             placeholder="Enter phone number"
-            onChange={(e) => setPhone(e.target.value)}
+            onChange={handleInputChange}
           />
         </div>
       </div>
@@ -132,10 +126,10 @@ export const RentCarForm: React.FC<IBrandFormProps> = ({
             name="address"
             type="text"
             required
-            defaultValue={initialValues?.address}
+            value={formData.address}
             className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all duration-300 hover:border-indigo-400"
             placeholder="Enter address"
-            onChange={(e) => setAddress(e.target.value)}
+            onChange={handleInputChange}
           />
         </div>
       </div>
@@ -150,9 +144,10 @@ export const RentCarForm: React.FC<IBrandFormProps> = ({
             name="password"
             type={showPassword ? 'text' : 'password'}
             required
+            value={formData.password}
             className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all duration-300 hover:border-indigo-400 pr-10"
             placeholder="Enter password"
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={handleInputChange}
           />
           <button
             type="button"

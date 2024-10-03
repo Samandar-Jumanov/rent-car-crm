@@ -3,5 +3,6 @@ export interface IServiceResponse<T> {
     message: string;
     data: T;
     statusCode: number;
+    responseObject : any 
   }
   

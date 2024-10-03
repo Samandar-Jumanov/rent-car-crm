@@ -4,9 +4,12 @@ import React from 'react';
 import { useBar } from '@/lib/hooks/useRightSide';
 import { Button } from "@/components/ui/button";
 
+
+
+
 interface RightSidebarProps {
   children: React.ReactNode;
-  onSubmit: () => void;
+  onSubmit: ( ) => void;
   title?: string;
   loadingState?: boolean;
 }
@@ -34,7 +37,9 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ children, onSubmit, title =
         </Button>
         <Button onClick={() => {
           onSubmit();
-          toggleBar();
+          if(!loadingState) {
+            toggleBar();
+          }
         }}>
           { loadingState ? "Loading..." : "  Yaratish"}
         </Button>
