@@ -1,42 +1,58 @@
 import React from 'react';
-import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 
+const formSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  icon: z.string().min(1, "Icon is required"),
+});
 
-type ITemplateProps = {
-        setName : ( value : string) => void;
-        setMessage : ( value : string) => void;
+type FormValues = z.infer<typeof formSchema>;
+
+interface CreateTemplateProps {
+  onSubmit: (data: FormValues) => void;
+  initialData?: Partial<FormValues>;
 }
-export const CreateTemplate: React.FC<ITemplateProps> = ( { setMessage , setName}) => {
+
+export function CreateTemplate({ onSubmit, initialData }: CreateTemplateProps): JSX.Element {
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: initialData || { title: "", icon: "" },
+  });
+
   return (
-    <div className="space-y-6">
-      <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-          Nomi
-        </label>
-        <div className="mt-1">
-          <input
-            id="name"
-            name="name"
-            type="text"
-            required
-            className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all duration-300 hover:border-indigo-400 text-gray-900 bg-white"
-            placeholder="Enter your name"
-            onChange={(e) => setName(e.target.value)}
-          />
-        </div>
-
-      </div>
-
-      <div>
-        <label htmlFor="message" className="block text-sm font-medium text-gray-700">
-          Xabar
-        </label>
-        <Textarea
-          placeholder="Xabaringizni kiriting"
-          className="mt-1"
-          onChange={(e) => setMessage(e.target.value)}
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Template Title</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter template title" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
-    </div>
+        <FormField
+          control={form.control}
+          name="icon"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Template Icon</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter template icon" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </form>
+    </Form>
   );
-};
+}

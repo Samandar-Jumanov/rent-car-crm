@@ -31,13 +31,11 @@ const Sidebar = () => {
     return null;
   }
 
-  
-
   const navItems = [
     { icon: Home, label: 'Home', href: '/' },
     { icon: CarFront, label: 'Rent Cars', href: '/rent-cars' },
     { icon: Users, label: 'Clients', href: '/clients' },
-    { icon: Star, label: 'Reviews', href: '/reviews' },
+    { icon: Star, label: 'Reviews', href: '/requests' },
     { icon: Building2, label: 'Brands', href: '/brands' },
     { icon: Car, label: 'Model', href: '/model' },
     { icon: Palette, label: 'Colors', href: '/colors' },
