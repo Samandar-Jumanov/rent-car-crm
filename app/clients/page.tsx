@@ -1,6 +1,6 @@
 "use client"
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import RightSidebar from '@/components/shared/RightSidebar';
@@ -12,17 +12,37 @@ import { ErrorDisplay } from '@/components/shared/ErrorDisplay';
 import { IUser } from '@/types/user';
 import { UserPagination } from '@/components/pagination/user.pagination';
 import { UserTable } from '@/components/tables/user.table';
+import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 
 const Client: React.FC = () => {
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const { toggleBar } = useBar();
   const [currentPage, setCurrentPage] = useState<number>(1);
   const pageSize: number = 20;
+  const router = useRouter();
+  const queryClient = useQueryClient();
 
-  const { data, isLoading, error, refetch } = useQuery<{ responseObject: IUser[] }>({
+  const { data, isLoading, error } = useQuery<{ responseObject: { activeUsers: IUser[], blockedUsers: IUser[] } }>({
     queryKey: ['users', currentPage],
     queryFn: () => getAllUsers(),
   });
+  const blockUserMutation = useMutation({
+    mutationFn: blockUser,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast.success('User blocked');
+    },
+    onError: (error) => {
+      console.error('Error blocking user:', error);
+      toast.error('Could not block user ');
+
+    }
+  });
+
+  const routeClient = (id: string) => {
+    router.push(`/clients/${id}`);
+  };
 
   const toggleUserSelection = (userId: string): void => {
     setSelectedUsers(prev => 
@@ -32,32 +52,18 @@ const Client: React.FC = () => {
     );
   };
 
-  const handleBlockUser = async (userId : string ): Promise<void> => {
-    try {
-     const response =   await blockUser(userId);
-     console.log({ response })
-      refetch();
-    } catch (error) {
-      console.error('Error blocking user:', error);
-    }
+  const handleBlockUser = async (userId: string): Promise<void> => {
+    blockUserMutation.mutate(userId);
   };
 
-  if (isLoading) return (
-      <UserListSkeleton />
-  );
+  if (isLoading) return <UserListSkeleton />;
   if (error) return (
-    <div className="flex flex-col  bg-gray-100 lg:ml-64">
+    <div className="flex flex-col bg-gray-100 lg:ml-64">
       <ErrorDisplay error={error} />
     </div>
   );
 
-  const users = data?.responseObject || [];
-  const activeUsers = users.filter(user => !user.isBlocked);
-  const blockedUsers = users.filter(user => user.isBlocked);
-
-  console.log({
-         users 
-  })
+  const { activeUsers, blockedUsers } = data?.responseObject || { activeUsers: [], blockedUsers: [] };
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-100 lg:ml-64">
@@ -84,6 +90,7 @@ const Client: React.FC = () => {
                 handleBlockUser={handleBlockUser}
                 currentPage={currentPage}
                 pageSize={pageSize}
+                routeClient={routeClient}
               />
             </TabsContent>
             <TabsContent value="bloklangan">
@@ -95,18 +102,19 @@ const Client: React.FC = () => {
                 currentPage={currentPage}
                 pageSize={pageSize}
                 isBlockedList
+                routeClient={routeClient}
               />
             </TabsContent>
           </Tabs>
           <UserPagination 
             currentPage={currentPage} 
             setCurrentPage={setCurrentPage} 
-            hasMore={users.length === pageSize}
+            hasMore={(activeUsers.length + blockedUsers.length) === pageSize}
           />
         </div>
       </main>
       
-      <RightSidebar onSubmit={() => {}} title="Sms jo'natish">
+      <RightSidebar onSubmit={() => {}} title="Sms jo'natish" >
         <SendMessage />
       </RightSidebar>
     </div>

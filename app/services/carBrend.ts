@@ -10,7 +10,9 @@ export const getAllCarBrands = async (): Promise<IServiceResponse<ICarBrand[]>> 
 export const createCarBrand = async (data: {
   brandName: string;
 }): Promise<IServiceResponse<ICarBrand>> => {
-  const response = await apiClient.post(`/car-brands`, data);
+  const response = await apiClient.post(`/car-brands`, {
+    carBrend : data.brandName
+  });
   return response.data;
 };
 

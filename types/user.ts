@@ -1,3 +1,4 @@
+
 export interface IUser {
     id: string;
     phoneNumber: string;
@@ -8,8 +9,10 @@ export interface IUser {
     updatedAt: Date;
     verificationCode?: string | null;
     isVerified: boolean;
-    isBlocked: boolean;
+    image : string 
   }
+
+  
   
 export   interface IUserTableProps {
     users: IUser[];
@@ -19,6 +22,7 @@ export   interface IUserTableProps {
     currentPage: number;
     pageSize: number;
     isBlockedList?: boolean;
+    routeClient : (id : string  ) => void 
   }
   
  export  interface IPaginationProps {

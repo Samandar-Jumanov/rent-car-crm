@@ -1,5 +1,11 @@
+import { IUser } from "./user";
+
 export interface IRequest {
     id: string;
-    title: string;
+    content: string;
+    type : "DEMAND" | "PROPOSAL";
     icon: string;
+    user : IUser
+    createdAt : Date
+    updatedAt : Date;
   }

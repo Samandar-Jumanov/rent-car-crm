@@ -5,13 +5,14 @@ import { IRentCar, IRentCarFormData } from "@/types/rent-car";
 import apiClient from "@/utils/axios";
 
 export async function getAllBrands() {
-         const response = await apiClient.get(`/brends`);
+         const response = await apiClient.get(`/brends/all`);
          return response.data;
 }
 
 export const createBrand = async (data: IRentCarFormData): Promise<IServiceResponse<IRentCar>> => {
-    const response = await apiClient.post('/brends/new', data);
-    console.log({ response });
+    const { regionId , ...rest } = data
+    console.log({ regionId})
+    const response = await apiClient.post('/brends/new', rest);
     return response.data;
   };
   

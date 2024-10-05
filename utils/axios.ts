@@ -6,7 +6,7 @@ export const API_BASE_URL = 'https://rent-car-1-9wlb.onrender.com';
 export const local = "http://localhost:8080"
 
 const apiClient = axios.create({
-  baseURL: API_BASE_URL, 
+  baseURL: local, 
 });
 
 apiClient.interceptors.request.use((config) => {

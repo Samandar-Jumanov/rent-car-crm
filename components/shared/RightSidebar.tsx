@@ -12,9 +12,10 @@ interface RightSidebarProps {
   onSubmit: ( ) => void;
   title?: string;
   loadingState?: boolean;
+  noBtn ? : boolean
 }
 
-const RightSidebar: React.FC<RightSidebarProps> = ({ children, onSubmit, title = "Sidebar" , loadingState=false }) => {
+const RightSidebar: React.FC<RightSidebarProps> = ({ children, onSubmit, title = "Sidebar" , loadingState=false  , noBtn}) => {
   const { isOpen, toggleBar } = useBar();
 
   return (
@@ -35,14 +36,14 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ children, onSubmit, title =
         <Button variant="outline" onClick={toggleBar}>
           Ortga
         </Button>
-        <Button onClick={() => {
+       {!noBtn && <Button onClick={() => {
           onSubmit();
           if(!loadingState) {
             toggleBar();
           }
         }}>
           { loadingState ? "Loading..." : "  Yaratish"}
-        </Button>
+        </Button> }
       </div>
     </div>
   );

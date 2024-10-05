@@ -9,23 +9,33 @@ import RightSidebar from '@/components/shared/RightSidebar';
 import { useBar } from '@/lib/hooks/useRightSide';
 import { getAllBrands, createBrand, deleteBrand } from '../services/rent-cars';
 import { RentCarTableSkeleton } from '@/components/skeletons/rent-car.skeleton';
-import { RentCarForm } from '@/components/forms/rent-car';
+import RentCarForm from '@/components/forms/rent-car';
 import { EmptyState } from '@/components/empty/rent-car.empty';
 import { RentCarTable } from '@/components/tables/rent-car.table';
 import { IRentCar } from '@/types/rent-car';
 import { IServiceResponse } from '@/types/server.response';
 import toast from 'react-hot-toast';
 
+interface FormData {
+  name: string;
+  phone: string;
+  password: string;
+  logo: string;
+  regionId: string;
+  cityId: string;
+}
+
 function RentCars() {
   const queryClient = useQueryClient();
-  const { toggleBar } = useBar();
+  const { isOpen, toggleBar } = useBar();
   const [editingBrand, setEditingBrand] = useState<IRentCar | null>(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: '',
     phone: '',
-    address: '',
     password: '',
     logo: '',
+    regionId: '',
+    cityId: '',
   });
 
   // Queries
@@ -41,16 +51,14 @@ function RentCars() {
         queryClient.invalidateQueries({ queryKey: ['brands'] });
         toast.success('Brand created successfully');
         toggleBar();
+        resetForm();
       }
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast.error(error.message)
     }
   });
 
-
-
- 
   const deleteMutation = useMutation({
     mutationFn: deleteBrand,
     onSuccess: (response) => {
@@ -69,13 +77,7 @@ function RentCars() {
 
   const handleCreateClick = () => {
     setEditingBrand(null);
-    setFormData({
-      name: '',
-      phone: '',
-      address: '',
-      password: '',
-      logo: '',
-    });
+    resetForm();
     toggleBar();
   };
 
@@ -83,15 +85,27 @@ function RentCars() {
     const data = {
       brendName: formData.name,
       ownerNumber: formData.phone,
-      address: formData.address,
       password: formData.password,
       logo: formData.logo,
+      regionId: formData.regionId,
+      cityId: formData.cityId,
     };
-      createMutation.mutate(data);
+    createMutation.mutate(data);
   };
 
   const handleInputChange = (name: string, value: string) => {
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      phone: '',
+      password: '',
+      logo: '',
+      regionId: '',
+      cityId: '',
+    });
   };
 
   if (brandsLoading) return <RentCarTableSkeleton />;
@@ -128,16 +142,20 @@ function RentCars() {
         </div>
       </div>
 
-      <RightSidebar 
-        title={editingBrand ? 'Rent carni tahrirlash' : 'Yangi yaratish'}
-        onSubmit={handleSubmit}
-        loadingState={createMutation.isPending }
-      >
-        <RentCarForm 
-          formData={formData}
-          onInputChange={handleInputChange}
-        />
-      </RightSidebar>
+      {isOpen && (
+        <RightSidebar 
+          title={editingBrand ? 'Rent carni tahrirlash' : 'Yangi yaratish'}
+          onSubmit={handleSubmit}
+          loadingState={createMutation.isPending}
+        >
+          <RentCarForm 
+            formData={formData}
+            handleInputChange={handleInputChange}
+            handleSubmit={handleSubmit}
+            isLoading={createMutation.isPending}
+          />
+        </RightSidebar>
+      )}
     </PageContainer>
   );
 }

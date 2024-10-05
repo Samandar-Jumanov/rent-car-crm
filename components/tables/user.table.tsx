@@ -27,7 +27,8 @@ export const UserTable: React.FC<IUserTableProps> = ({
     handleBlockUser, 
     currentPage, 
     pageSize, 
-    isBlockedList = false 
+    isBlockedList = false ,
+    routeClient = () => {}
   }) => (
     <div className="overflow-x-auto">
       <Table>
@@ -56,7 +57,7 @@ export const UserTable: React.FC<IUserTableProps> = ({
                   <Avatar className="h-8 w-8">
                     <AvatarFallback>{user.name?.[0] || user.phoneNumber[0]}</AvatarFallback>
                   </Avatar>
-                  <span>{user.name || 'N/A'}</span>
+                  <span className='text-blue-700 hover:cursor' onClick={( ) => routeClient(user.id)}>{user.name || 'N/A'}</span>
                 </div>
               </TableCell>
               <TableCell>{user.phoneNumber}</TableCell>
