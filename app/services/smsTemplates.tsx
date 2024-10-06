@@ -6,7 +6,7 @@ export async function getAllSmsTemplates() {
 }
 
 
-export const createNewSmsTemplate = async  ( data : { title  : string , icon : string} ) => {
+export const createNewSmsTemplate = async  ( data : { title  : string , content : string} ) => {
     const response = await apiClient.post(`/sms-templates`, data);
     return response.data;
 }

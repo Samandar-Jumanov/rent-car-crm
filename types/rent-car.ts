@@ -22,6 +22,21 @@ export interface IBrend {
   createdAt: Date;
   updatedAt: Date;
 }
+
+
+export interface ICity {
+  id: string;
+  name: string;
+  regionId: string;
+  region : IRegion
+} 
+
+export interface IRegion {
+  id: string;
+  name: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
   
 export interface IRentCar {
   id: string;
@@ -29,13 +44,13 @@ export interface IRentCar {
   logo: string;
   brendName: string;
   ownerNumber: string;
-  address: string;
   password: string;
   carDelivery: any;
   topBrendId: string | null;
   payment: any;
   ratings: number[];
   averageRating: number;
+  city  : ICity
   createdAt: Date;
   updatedAt: Date;
 }

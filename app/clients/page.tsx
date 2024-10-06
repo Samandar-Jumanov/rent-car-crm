@@ -1,32 +1,56 @@
 "use client"
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import RightSidebar from '@/components/shared/RightSidebar';
 import { useBar } from '@/lib/hooks/useRightSide';
 import { SendMessage } from '@/components/forms/send-message';
-import { getAllUsers, blockUser } from '@/app/services/clients';
+import { getAllUsers, blockUser, unblockUser } from '@/app/services/clients';
 import { UserListSkeleton } from '@/components/skeletons/user.skeleton';
 import { ErrorDisplay } from '@/components/shared/ErrorDisplay';
 import { IUser } from '@/types/user';
-import { UserPagination } from '@/components/pagination/user.pagination';
 import { UserTable } from '@/components/tables/user.table';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
+import { IServiceResponse } from '@/types/server.response';
+import Pagination from '@/components/Pagination';
+import { usePaginate } from '@/lib/hooks/usePagination';
 
 const Client: React.FC = () => {
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const { toggleBar } = useBar();
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const pageSize: number = 20;
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState<'aktivlar' | 'bloklanganlar'>('aktivlar');
   const queryClient = useQueryClient();
 
-  const { data, isLoading, error } = useQuery<{ responseObject: { activeUsers: IUser[], blockedUsers: IUser[] } }>({
-    queryKey: ['users', currentPage],
-    queryFn: () => getAllUsers(),
+  const { 
+    currentPage, 
+    pageSize, 
+    totalPages, 
+    setCurrentPage, 
+    setTotalItems,
+    currentDisplayStart, 
+    currentDisplayEnd 
+  } = usePaginate();
+
+  const { data, isLoading, error } = useQuery<IServiceResponse<{
+    activeUsers: IUser[],
+    blockedUsers: IUser[],
+    totalCount: number,
+    activeCount: number,
+    blockedCount: number
+  }>>({
+    queryKey: ['users', currentPage, pageSize],
+    queryFn: () => getAllUsers(currentPage, pageSize),
   });
+
+  useEffect(() => {
+    if (data?.responseObject?.totalCount) {
+      setTotalItems(data.responseObject.totalCount);
+    }
+  }, [data?.responseObject?.totalCount, setTotalItems]);
+
   const blockUserMutation = useMutation({
     mutationFn: blockUser,
     onSuccess: () => {
@@ -35,8 +59,19 @@ const Client: React.FC = () => {
     },
     onError: (error) => {
       console.error('Error blocking user:', error);
-      toast.error('Could not block user ');
+      toast.error('Could not block user');
+    }
+  });
 
+  const unblockUserMutation = useMutation({
+    mutationFn: unblockUser,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast.success('User unblocked');
+    },
+    onError: (error) => {
+      console.error('Error unblocking user:', error);
+      toast.error('Could not unblock user');
     }
   });
 
@@ -56,6 +91,10 @@ const Client: React.FC = () => {
     blockUserMutation.mutate(userId);
   };
 
+  const handleUnblockUser = async (userId: string): Promise<void> => {
+    unblockUserMutation.mutate(userId);
+  };
+
   if (isLoading) return <UserListSkeleton />;
   if (error) return (
     <div className="flex flex-col bg-gray-100 lg:ml-64">
@@ -63,7 +102,16 @@ const Client: React.FC = () => {
     </div>
   );
 
-  const { activeUsers, blockedUsers } = data?.responseObject || { activeUsers: [], blockedUsers: [] };
+  const { activeUsers, blockedUsers, activeCount, blockedCount } = data?.responseObject || { 
+    activeUsers: [], 
+    blockedUsers: [], 
+    totalCount: 0, 
+    activeCount: 0, 
+    blockedCount: 0 
+  };
+
+  const displayedUsers = activeTab === 'aktivlar' ? activeUsers : blockedUsers;
+  const displayedCount = activeTab === 'aktivlar' ? activeCount : blockedCount;
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-100 lg:ml-64">
@@ -77,40 +125,46 @@ const Client: React.FC = () => {
               </Button>
             )}
           </div>
-          <Tabs defaultValue="aktivlar" className="w-full">
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'aktivlar' | 'bloklanganlar')} className="w-full">
             <TabsList className="mb-4">
-              <TabsTrigger value="aktivlar">Aktivlar</TabsTrigger>
-              <TabsTrigger value="bloklangan">Bloklangan</TabsTrigger>
+              <TabsTrigger value="aktivlar">Aktivlar ({activeCount})</TabsTrigger>
+              <TabsTrigger value="bloklanganlar">Bloklanganlar ({blockedCount})</TabsTrigger>
             </TabsList>
             <TabsContent value="aktivlar">
               <UserTable 
-                users={activeUsers} 
+                users={displayedUsers} 
                 selectedUsers={selectedUsers} 
                 toggleUserSelection={toggleUserSelection}
                 handleBlockUser={handleBlockUser}
                 currentPage={currentPage}
                 pageSize={pageSize}
+                isBlockedList={false}
                 routeClient={routeClient}
               />
             </TabsContent>
-            <TabsContent value="bloklangan">
+            <TabsContent value="bloklanganlar">
               <UserTable 
-                users={blockedUsers} 
+                users={displayedUsers} 
                 selectedUsers={selectedUsers} 
                 toggleUserSelection={toggleUserSelection}
-                handleBlockUser={handleBlockUser}
+                handleBlockUser={handleUnblockUser}
                 currentPage={currentPage}
                 pageSize={pageSize}
-                isBlockedList
+                isBlockedList={true}
                 routeClient={routeClient}
               />
             </TabsContent>
           </Tabs>
-          <UserPagination 
-            currentPage={currentPage} 
-            setCurrentPage={setCurrentPage} 
-            hasMore={(activeUsers.length + blockedUsers.length) === pageSize}
-          />
+          <div className="mt-6 flex flex-col sm:flex-row justify-between items-center">
+            <div className="text-sm text-gray-600 mb-4 sm:mb-0">
+              Showing {currentDisplayStart} to {currentDisplayEnd} of {displayedCount} users
+            </div>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          </div>
         </div>
       </main>
       

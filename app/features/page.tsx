@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import PageContainer from '@/components/shared/PageContainer';
 import RightSidebar from '@/components/shared/RightSidebar';
 import { useBar } from '@/lib/hooks/useRightSide';
-import { getAllFeatures, createFeature, updateFeature } from '@/app/services/features';
+import { getAllFeatures, createFeature, updateFeature, deleteFeature } from '@/app/services/features';
 import { FeatureTableSkeleton } from '@/components/skeletons/feature.skeleton';
 import { CreateFeature } from '@/components/forms/features';
 import { EmptyState } from '@/components/empty/feature.empty';
@@ -27,7 +27,6 @@ function Features() {
     queryKey: ['features'],
     queryFn: getAllFeatures,
   });
-
 
   const createMutation = useMutation({
     mutationFn: createFeature,
@@ -57,6 +56,19 @@ function Features() {
     }
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: deleteFeature,
+    onSuccess: (response) => {
+      if (response.success) {
+        queryClient.invalidateQueries({ queryKey: ['features'] });
+        toast.success('Feature deleted successfully');
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message)
+    }
+  });
+
   const handleCreateClick = () => {
     setEditingFeature(null);
     setFeatureTitle('');
@@ -70,6 +82,12 @@ function Features() {
       return;
     }
     createMutation.mutate({ title: featureTitle, icon: featureIcon });
+  };
+
+  const handleDelete = (id: string) => {
+    if (window.confirm('Are you sure you want to delete this feature?')) {
+      deleteMutation.mutate(id);
+    }
   };
 
   if (featuresLoading) return <FeatureTableSkeleton />;
@@ -128,7 +146,7 @@ function Features() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => {/* Implement delete functionality */}}
+                          onClick={() => handleDelete(feature.id)}
                         >
                           <Trash2 className="h-4 w-4 text-red-500" />
                         </Button>

@@ -1,13 +1,13 @@
 import apiClient from "@/utils/axios";
 
 export async function getAllRegions() {
-         const response = await apiClient.get(`/regions`);
+         const response = await apiClient.get(`/regions/all`);
          return response.data;
 }
 
 
 export const getOneRegion = async ( regionId : string ) => {
-    const response = await apiClient.get(`/regions/${regionId}`);
+    const response = await apiClient.get(`/regions/${regionId}` );
     return response.data;
 }
 

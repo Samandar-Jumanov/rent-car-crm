@@ -1,10 +1,15 @@
 
 import apiClient from "@/utils/axios";
 
-export async function getAllUsers() {
-         const response = await apiClient.get(`/users?role=AGENT?status=active`);
-         return response.data;
-}
+export async function getAllUsers(currentPage: number, pageSize: number) {
+    const response = await apiClient.get('/users', {
+      params: {
+        currentPage,
+        pageSize,
+      },
+    });
+    return response.data;
+  }
 
 
 

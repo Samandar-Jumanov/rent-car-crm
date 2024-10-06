@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
@@ -15,6 +15,8 @@ import { ModelTable } from '@/components/tables/model.table';
 import { IModel } from '@/types/model.type';
 import toast from 'react-hot-toast';
 import { IServiceResponse } from '@/types/server.response';
+import Pagination from '@/components/Pagination';
+import { usePaginate } from '@/lib/hooks/usePagination';
 
 export default function ModelPage() {
   const queryClient = useQueryClient();
@@ -22,10 +24,29 @@ export default function ModelPage() {
   const [editingModel, setEditingModel] = useState<IModel | null>(null);
   const [modelName, setModelName] = useState("");
 
-  const { data: modelsResponse, isLoading, error } = useQuery<IServiceResponse<IModel[]>>({
-    queryKey: ['models'],
-    queryFn: getAllModels,
+  const { 
+    currentPage, 
+    pageSize, 
+    totalPages, 
+    setCurrentPage, 
+    setTotalItems,
+    currentDisplayStart, 
+    currentDisplayEnd 
+  } = usePaginate();
+
+  const { data: modelsResponse, isLoading, error } = useQuery<IServiceResponse<{
+    models: IModel[],
+    totalCount: number
+  }>>({
+    queryKey: ['models', currentPage, pageSize],
+    queryFn: () => getAllModels(currentPage, pageSize),
   });
+
+  useEffect(() => {
+    if (modelsResponse?.responseObject?.totalCount) {
+      setTotalItems(modelsResponse.responseObject.totalCount);
+    }
+  }, [modelsResponse?.responseObject?.totalCount, setTotalItems]);
 
   const createMutation = useMutation({
     mutationFn: createModel,
@@ -55,7 +76,7 @@ export default function ModelPage() {
       }
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+       toast.error(error.message);
     }
   });
 
@@ -67,8 +88,8 @@ export default function ModelPage() {
         toast.success('Model deleted successfully');
       }
     },
-    onError: () => {
-      toast.error('Failed to delete model');
+    onError: ( error  ) => {
+      toast.error(error.message);
     }
   });
 
@@ -100,8 +121,7 @@ export default function ModelPage() {
   if (isLoading) return <ModelTableSkeleton />;
   if (error) return <div className="text-center text-red-600 py-10">Error loading data</div>;
 
-  const models = modelsResponse?.responseObject || [];
-  console.log({ modelsResponse })
+  const { models, totalCount } = modelsResponse?.responseObject || { models: [], totalCount: 0 };
   const isEmpty = models.length === 0;
 
   return (
@@ -122,12 +142,24 @@ export default function ModelPage() {
           {isEmpty ? (
             <EmptyState onCreateClick={handleCreateClick} />
           ) : (
-            <ModelTable 
-              models={models}
-              onEdit={handleEditClick}
-              onDelete={(id) => deleteMutation.mutate(id)}
-              loading={deleteMutation.isPending}
-            />
+            <>
+              <ModelTable 
+                models={models}
+                onEdit={handleEditClick}
+                onDelete={(id) => deleteMutation.mutate(id)}
+                loading={deleteMutation.isPending}
+              />
+              <div className="mt-6 flex flex-col sm:flex-row justify-between items-center p-4">
+                <div className="text-sm text-gray-600 mb-4 sm:mb-0">
+                  Showing {currentDisplayStart} to {currentDisplayEnd} of {totalCount} models
+                </div>
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
+              </div>
+            </>
           )}
         </div>
       </div>

@@ -1,7 +1,12 @@
 import apiClient from "@/utils/axios";
 
-export const getAllModels = async ( ) => {
-       const response = await apiClient.get(`/models`);
+export const getAllModels = async ( currentPage : number , pageSize : number  ) => {
+       const response = await apiClient.get(`/models` , {
+                params : {
+                         currentPage,
+                         pageSize,
+                }
+       });
        return response.data;
 }
 

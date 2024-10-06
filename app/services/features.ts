@@ -18,3 +18,7 @@ export const updateFeature = async  (data : { title  : string , link : string}  
 }
 
 
+export const deleteFeature = async (id : string) => {
+    const response = await apiClient.delete(`/features/${id}`,);
+    return response.data;
+}

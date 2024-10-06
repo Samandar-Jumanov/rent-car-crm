@@ -4,8 +4,14 @@ import { IServiceResponse } from "@/types/server.response";
 import { IRentCar, IRentCarFormData } from "@/types/rent-car";
 import apiClient from "@/utils/axios";
 
-export async function getAllBrands() {
-         const response = await apiClient.get(`/brends/all`);
+export async function getAllBrands( currentPage : number , pageSize : number) {
+         const response = await apiClient.get(`/brends/all` , {
+            params: {
+              currentPage,
+              pageSize,
+            },
+         }
+         );
          return response.data;
 }
 

@@ -21,7 +21,7 @@ function Templates() {
   const { toggleBar } = useBar();
   const [editingTemplate, setEditingTemplate] = useState<ITemplate | null>(null);
   const [templateTitle, setTemplateTitle] = useState('');
-  const [templateIcon, setTemplateIcon] = useState('');
+  const [content, setContent] = useState('');
 
   const { data: templatesResponse, isLoading: templatesLoading, error: templatesError } = useQuery<IServiceResponse<ITemplate[]>>({
     queryKey: ['templates'],
@@ -72,16 +72,12 @@ function Templates() {
   const handleCreateClick = () => {
     setEditingTemplate(null);
     setTemplateTitle('');
-    setTemplateIcon('');
+    setContent('');
     toggleBar();
   };
 
   const handleSubmit = () => {
-    if (!templateTitle.trim() || !templateIcon.trim()) {
-      toast.error('Template title and icon are required');
-      return;
-    }
-    createMutation.mutate({ title: templateTitle, icon: templateIcon });
+    createMutation.mutate({ title: templateTitle, content: content });
   };
 
   const handleDelete = (id: string) => {
@@ -138,7 +134,7 @@ function Templates() {
                           onClick={() => {
                             setEditingTemplate(template);
                             setTemplateTitle(template.title);
-                            setTemplateIcon(template.icon);
+                            setContent(template.content);
                             toggleBar();
                           }}
                         >
@@ -168,13 +164,10 @@ function Templates() {
       >
         
 <CreateTemplate 
-  onSubmit={(data) => {
-    setTemplateTitle(data.title);
-    setTemplateIcon(data.icon);
-  }}
+ 
   initialData={{ 
     title: templateTitle, 
-    icon: templateIcon 
+    content: content 
   }}
   />
       </RightSidebar>

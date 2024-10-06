@@ -2,8 +2,13 @@ import apiClient from "@/utils/axios";
 import { IServiceResponse } from "@/types/server.response";
 import { IBanner } from "@/types/banner";
 
-export const getAllBanners = async (): Promise<IServiceResponse<IBanner[]>> => {
-  const response = await apiClient.get(`/banners`);
+export const getAllBanners = async (currentPage : number , pageSize : number): Promise<IServiceResponse<IBanner[]>> => {
+  const response = await apiClient.get('/banners', {
+    params: {
+      currentPage,
+      pageSize,
+    },
+  });
   return response.data;
 };
 

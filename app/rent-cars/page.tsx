@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
@@ -15,34 +15,47 @@ import { RentCarTable } from '@/components/tables/rent-car.table';
 import { IRentCar } from '@/types/rent-car';
 import { IServiceResponse } from '@/types/server.response';
 import toast from 'react-hot-toast';
+import Pagination from '@/components/Pagination';
+import { usePaginate } from '@/lib/hooks/usePagination';
 
-interface FormData {
-  name: string;
-  phone: string;
-  password: string;
-  logo: string;
-  regionId: string;
-  cityId: string;
-}
+const initialFormData = {
+  name: '',
+  phone: '',
+  password: '',
+  logo: '',
+  regionId: '',
+  cityId: '',
+};
 
 function RentCars() {
   const queryClient = useQueryClient();
   const { isOpen, toggleBar } = useBar();
   const [editingBrand, setEditingBrand] = useState<IRentCar | null>(null);
-  const [formData, setFormData] = useState<FormData>({
-    name: '',
-    phone: '',
-    password: '',
-    logo: '',
-    regionId: '',
-    cityId: '',
+  const [formData, setFormData] = useState(initialFormData);
+
+  const { 
+    currentPage, 
+    pageSize, 
+    totalPages, 
+    setCurrentPage, 
+    setTotalItems,
+    currentDisplayStart, 
+    currentDisplayEnd 
+  } = usePaginate();
+
+  const { data: brandsResponse, isLoading: brandsLoading, error: brandsError } = useQuery<IServiceResponse<{
+    brands: IRentCar[],
+    totalCount: number
+  }>>({
+    queryKey: ['brands', currentPage, pageSize],
+    queryFn: () => getAllBrands(currentPage, pageSize),
   });
 
-  // Queries
-  const { data: brandsResponse, isLoading: brandsLoading, error: brandsError } = useQuery<IServiceResponse<IRentCar[]>>({
-    queryKey: ['brands'],
-    queryFn: getAllBrands,
-  });
+  useEffect(() => {
+    if (brandsResponse?.responseObject?.totalCount) {
+      setTotalItems(brandsResponse.responseObject.totalCount);
+    }
+  }, [brandsResponse?.responseObject?.totalCount, setTotalItems]);
 
   const createMutation = useMutation({
     mutationFn: createBrand,
@@ -51,11 +64,11 @@ function RentCars() {
         queryClient.invalidateQueries({ queryKey: ['brands'] });
         toast.success('Brand created successfully');
         toggleBar();
-        resetForm();
+        setFormData(initialFormData);
       }
     },
     onError: (error: Error) => {
-      toast.error(error.message)
+      toast.error(error.message);
     }
   });
 
@@ -65,8 +78,7 @@ function RentCars() {
       if (response.success) {
         queryClient.invalidateQueries({ queryKey: ['brands'] });
         toast.success('Brand deleted successfully');
-      }
-      if (typeof response === 'string') {
+      } else if (typeof response === 'string') {
         toast.error("404 not found");
       }
     },
@@ -75,13 +87,13 @@ function RentCars() {
     }
   });
 
-  const handleCreateClick = () => {
+  const handleCreateClick = useCallback(() => {
     setEditingBrand(null);
-    resetForm();
+    setFormData(initialFormData);
     toggleBar();
-  };
+  }, [toggleBar]);
 
-  const handleSubmit = () => {
+  const handleSubmit = useCallback(() => {
     const data = {
       brendName: formData.name,
       ownerNumber: formData.phone,
@@ -91,28 +103,18 @@ function RentCars() {
       cityId: formData.cityId,
     };
     createMutation.mutate(data);
-  };
+  }, [formData, createMutation]);
 
-  const handleInputChange = (name: string, value: string) => {
+  const handleInputChange = useCallback((name: string, value: string) => {
     setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      phone: '',
-      password: '',
-      logo: '',
-      regionId: '',
-      cityId: '',
-    });
-  };
+  }, []);
 
   if (brandsLoading) return <RentCarTableSkeleton />;
   if (brandsError) return <div className="text-center text-red-600 py-10">Error loading data</div>;
 
-  const brands = brandsResponse?.responseObject || [];
+  const { brands, totalCount } = brandsResponse?.responseObject || { brands: [], totalCount: 0 };
   const isEmpty = brands.length === 0;
+
 
   return (
     <PageContainer 
@@ -132,12 +134,24 @@ function RentCars() {
           {isEmpty ? (
             <EmptyState onCreateClick={handleCreateClick} />
           ) : (
-            <RentCarTable 
-              brands={brands}
-              onDelete={(id) => deleteMutation.mutate(id)}
-              loading={deleteMutation.isPending}
-              setLoading={(value) => {console.log(value)}} 
-            />
+            <>
+              <RentCarTable 
+                brands={brands}
+                onDelete={(id) => deleteMutation.mutate(id)}
+                loading={deleteMutation.isPending}
+                setLoading={() => {}}
+              />
+              <div className="mt-6 flex flex-col sm:flex-row justify-between items-center p-4">
+                <div className="text-sm text-gray-600 mb-4 sm:mb-0">
+                  Showing {currentDisplayStart} to {currentDisplayEnd} of {totalCount} brands
+                </div>
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
+              </div>
+            </>
           )}
         </div>
       </div>
@@ -151,8 +165,6 @@ function RentCars() {
           <RentCarForm 
             formData={formData}
             handleInputChange={handleInputChange}
-            handleSubmit={handleSubmit}
-            isLoading={createMutation.isPending}
           />
         </RightSidebar>
       )}
