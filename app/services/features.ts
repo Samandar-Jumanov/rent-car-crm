@@ -1,7 +1,12 @@
 import apiClient from "@/utils/axios";
 
-export async function getAllFeatures() {
-         const response = await apiClient.get(`/features`);
+export async function getAllFeatures(currentPage : number , pageSize : number) {
+         const response = await apiClient.get(`/features` , {
+             params : {
+                  pageSize ,
+                  currentPage
+             }
+         });
          return response.data;
 }
 

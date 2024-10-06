@@ -1,7 +1,12 @@
 import apiClient from "@/utils/axios";
 
-export async function getAllSmsTemplates() {
-         const response = await apiClient.get(`/sms-templates`);
+export async function getAllSmsTemplates(currentPage : number , pageSize : number) {
+         const response = await apiClient.get(`/sms-templates` , {
+              params : {
+                         currentPage,
+                         pageSize,
+                }
+         });
          return response.data;
 }
 

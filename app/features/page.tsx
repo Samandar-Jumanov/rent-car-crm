@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Pencil, Trash2 } from "lucide-react";
@@ -15,6 +15,8 @@ import { EmptyState } from '@/components/empty/feature.empty';
 import { IFeature } from '@/types/feature.type';
 import { IServiceResponse } from '@/types/server.response';
 import toast from 'react-hot-toast';
+import Pagination from '@/components/Pagination';
+import { usePaginate } from '@/lib/hooks/usePagination';
 
 function Features() {
   const queryClient = useQueryClient();
@@ -23,10 +25,29 @@ function Features() {
   const [featureTitle, setFeatureTitle] = useState('');
   const [featureIcon, setFeatureIcon] = useState('');
 
-  const { data: featuresResponse, isLoading: featuresLoading, error: featuresError } = useQuery<IServiceResponse<IFeature[]>>({
-    queryKey: ['features'],
-    queryFn: getAllFeatures,
+  const { 
+    currentPage, 
+    pageSize, 
+    totalPages, 
+    setCurrentPage, 
+    setTotalItems,
+    currentDisplayStart, 
+    currentDisplayEnd 
+  } = usePaginate();
+
+  const { data: featuresResponse, isLoading: featuresLoading, error: featuresError } = useQuery<IServiceResponse<{
+    features: IFeature[],
+    totalCount: number
+  }>>({
+    queryKey: ['features', currentPage, pageSize],
+    queryFn: () => getAllFeatures(currentPage, pageSize),
   });
+
+  useEffect(() => {
+    if (featuresResponse?.responseObject?.totalCount) {
+      setTotalItems(featuresResponse.responseObject.totalCount);
+    }
+  }, [featuresResponse?.responseObject?.totalCount, setTotalItems]);
 
   const createMutation = useMutation({
     mutationFn: createFeature,
@@ -37,7 +58,7 @@ function Features() {
         toggleBar();
       }
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast.error(error.message)
     }
   });
@@ -51,7 +72,7 @@ function Features() {
         toggleBar();
       }
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast.error(error.message)
     }
   });
@@ -64,7 +85,7 @@ function Features() {
         toast.success('Feature deleted successfully');
       }
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast.error(error.message)
     }
   });
@@ -93,7 +114,7 @@ function Features() {
   if (featuresLoading) return <FeatureTableSkeleton />;
   if (featuresError) return <div className="text-center text-red-600 py-10">Error loading data</div>;
 
-  const features = featuresResponse?.responseObject || [];
+  const { features, totalCount } = featuresResponse?.responseObject || { features: [], totalCount: 0 };
   const isEmpty = features.length === 0;
 
   return (
@@ -114,48 +135,60 @@ function Features() {
           {isEmpty ? (
             <EmptyState onCreateClick={handleCreateClick} />
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[100px]">№</TableHead>
-                  <TableHead>Nomi</TableHead>
-                  <TableHead>Icon</TableHead>
-                  <TableHead className="w-[120px]">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {features.map((feature: IFeature, index: number) => (
-                  <TableRow key={feature.id}>
-                    <TableCell>{index + 1}</TableCell>
-                    <TableCell>{feature.title}</TableCell>
-                    <TableCell>{feature.icon}</TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => {
-                            setEditingFeature(feature);
-                            setFeatureTitle(feature.title);
-                            setFeatureIcon(feature.icon);
-                            toggleBar();
-                          }}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDelete(feature.id)}
-                        >
-                          <Trash2 className="h-4 w-4 text-red-500" />
-                        </Button>
-                      </div>
-                    </TableCell>
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[100px]">№</TableHead>
+                    <TableHead>Nomi</TableHead>
+                    <TableHead>Icon</TableHead>
+                    <TableHead className="w-[120px]">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {features.map((feature: IFeature, index: number) => (
+                    <TableRow key={feature.id}>
+                      <TableCell>{(currentPage - 1) * pageSize + index + 1}</TableCell>
+                      <TableCell>{feature.title}</TableCell>
+                      <TableCell>{feature.icon}</TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              setEditingFeature(feature);
+                              setFeatureTitle(feature.title);
+                              setFeatureIcon(feature.icon);
+                              toggleBar();
+                            }}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDelete(feature.id)}
+                          >
+                            <Trash2 className="h-4 w-4 text-red-500" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              <div className="mt-6 flex flex-col sm:flex-row justify-between items-center p-4">
+                <div className="text-sm text-gray-600 mb-4 sm:mb-0">
+                  Showing {currentDisplayStart} to {currentDisplayEnd} of {totalCount} features
+                </div>
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
+              </div>
+            </>
           )}
         </div>
       </div>
