@@ -91,8 +91,8 @@ const Client: React.FC = () => {
     blockUserMutation.mutate(userId);
   };
 
-  const handleUnblockUser = async (userId: string): Promise<void> => {
-    unblockUserMutation.mutate(userId);
+  const handleUnblockUser = async (blockId: string): Promise<void> => {
+    unblockUserMutation.mutate(blockId);
   };
 
   if (isLoading) return <UserListSkeleton />;

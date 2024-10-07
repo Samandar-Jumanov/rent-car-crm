@@ -25,8 +25,8 @@ export async function blockUser (userId : string ){
 }
 
 
-export async function unblockUser  (userId : string ){
-    const response = await apiClient.delete(`/users/admin/block/${userId}`);
+export async function unblockUser  (blockId : string ){
+    const response = await apiClient.delete(`/users/admin/block/${blockId}`);
     return response.data;
 }
 
