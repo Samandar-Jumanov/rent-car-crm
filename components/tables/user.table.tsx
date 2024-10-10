@@ -78,7 +78,7 @@ export const UserTable: React.FC<IUserTableProps> = ({
                           Haqiqatan ham bu foydalanuvchini blokdan chiqarishni xohlaysizmi?
                         </AlertDialogDescription>
                       </AlertDialogHeader>
-                      <AlertDialogFooter>3
+                      <AlertDialogFooter>
                         <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
                         <AlertDialogAction onClick={() => handleBlockUser(user.id)}>Blokdan chiqarish</AlertDialogAction>
                       </AlertDialogFooter>

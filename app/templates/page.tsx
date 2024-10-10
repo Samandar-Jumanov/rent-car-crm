@@ -22,8 +22,7 @@ function Templates() {
   const queryClient = useQueryClient();
   const { toggleBar } = useBar();
   const [editingTemplate, setEditingTemplate] = useState<ITemplate | null>(null);
-  const [templateTitle, setTemplateTitle] = useState('');
-  const [content, setContent] = useState('');
+  const [formData, setFormData] = useState({ title: '', content: '' });
 
   const { 
     currentPage, 
@@ -92,19 +91,26 @@ function Templates() {
 
   const handleCreateClick = () => {
     setEditingTemplate(null);
-    setTemplateTitle('');
-    setContent('');
+    setFormData({ title: '', content: '' });
     toggleBar();
   };
 
   const handleSubmit = () => {
-    createMutation.mutate({ title: templateTitle, content: content });
+    // if (editingTemplate) {
+    //   updateMutation.mutate({ id: editingTemplate.id, ...formData });
+    // } else {
+      createMutation.mutate(formData);
+    // }
   };
 
   const handleDelete = (id: string) => {
     if (confirm('Are you sure you want to delete this template?')) {
       deleteMutation.mutate(id);
     }
+  };
+
+  const handleFormChange = (newData: { title: string; content: string }) => {
+    setFormData(newData);
   };
 
   if (templatesLoading) return <TemplateTableSkeleton />;
@@ -156,8 +162,10 @@ function Templates() {
                             size="icon"
                             onClick={() => {
                               setEditingTemplate(template);
-                              setTemplateTitle(template.title);
-                              setContent(template.content);
+                              setFormData({
+                                title: template.title,
+                                content: template.content
+                              });
                               toggleBar();
                             }}
                           >
@@ -197,10 +205,8 @@ function Templates() {
         loadingState={createMutation.isPending || updateMutation.isPending}
       >
         <CreateTemplate 
-          initialData={{ 
-            title: templateTitle, 
-            content: content 
-          }}
+          initialData={formData}
+          onChange={handleFormChange}
         />
       </RightSidebar>
     </PageContainer>

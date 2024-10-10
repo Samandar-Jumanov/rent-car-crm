@@ -2,11 +2,11 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import { AUTH_COOKIE_NAME } from '@/lib/hooks/useAuth';
 
-export const API_BASE_URL = 'https://rent-car-2.onrender.com';
+export const API_BASE_URL = 'https://rent-car-3.onrender.com';
 export const local = "http://localhost:8080"
 
 const apiClient = axios.create({
-  baseURL: API_BASE_URL, 
+  baseURL: local, 
 });
 
 apiClient.interceptors.request.use((config) => {
@@ -20,3 +20,5 @@ apiClient.interceptors.request.use((config) => {
 });
 
 export default apiClient;
+
+

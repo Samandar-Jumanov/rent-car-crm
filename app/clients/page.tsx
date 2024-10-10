@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import RightSidebar from '@/components/shared/RightSidebar';
 import { useBar } from '@/lib/hooks/useRightSide';
-import { SendMessage } from '@/components/forms/send-message';
+import { SmsTemplateSelector } from '@/components/forms/send-message';
 import { getAllUsers, blockUser, unblockUser } from '@/app/services/clients';
 import { UserListSkeleton } from '@/components/skeletons/user.skeleton';
 import { ErrorDisplay } from '@/components/shared/ErrorDisplay';
@@ -169,7 +169,7 @@ const Client: React.FC = () => {
       </main>
       
       <RightSidebar onSubmit={() => {}} title="Sms jo'natish" >
-        <SendMessage />
+        <SmsTemplateSelector />
       </RightSidebar>
     </div>
   );

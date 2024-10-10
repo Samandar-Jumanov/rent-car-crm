@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -8,21 +8,17 @@ interface FormValues {
 }
 
 interface CreateTemplateProps {
-  initialData?: Partial<FormValues>;
+  initialData: FormValues;
+  onChange: (data: FormValues) => void;
 }
 
-export const   CreateTemplate = ({ initialData }: CreateTemplateProps)=> {
-  const [formData, setFormData] = useState<FormValues>({
-    title: initialData?.title || "",
-    content: initialData?.content || ""
-  });
-
+export const CreateTemplate = ({ initialData, onChange }: CreateTemplateProps) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prevData => ({
-      ...prevData,
+    onChange({
+      ...initialData,
       [name]: value
-    }));
+    });
   };
 
   return (
@@ -34,7 +30,7 @@ export const   CreateTemplate = ({ initialData }: CreateTemplateProps)=> {
         <Input
           id="title"
           name="title"
-          value={formData.title}
+          value={initialData.title}
           onChange={handleChange}
           placeholder="Enter template title"
           className="mt-1"
@@ -47,7 +43,7 @@ export const   CreateTemplate = ({ initialData }: CreateTemplateProps)=> {
         <Textarea
           id="content"
           name="content"
-          value={formData.content}
+          value={initialData.content}
           onChange={handleChange}
           placeholder="Enter template content"
           className="mt-1"
