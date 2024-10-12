@@ -3,7 +3,7 @@ import { IServiceResponse } from "@/types/server.response";
 import { IBanner } from "@/types/banner";
 
 export const getAllBanners = async (currentPage : number , pageSize : number): Promise<IServiceResponse<IBanner[]>> => {
-  const response = await apiClient.get('/banners', {
+  const response = await apiClient.get('/banners/all', {
     params: {
       currentPage,
       pageSize,
@@ -14,7 +14,7 @@ export const getAllBanners = async (currentPage : number , pageSize : number): P
 
 export const createNewBanner  = async (data: {
   title : string,
-  choosenImage : string,
+  choosenImage : File,
   carId : string 
 }): Promise<IServiceResponse<IBanner>> => {
   const response = await apiClient.post(`/banners/${data.carId}`, data);
@@ -27,9 +27,11 @@ export const deleteBanner = async (brandId: string): Promise<IServiceResponse<vo
 };
 
 export const updateBanner = async (
-  bannerId: string,
-  data: { title: string }
+   data : {
+       bannerId : string ,
+       data : { title ? : string; choosenImage ? : File; carId ?: string } 
+   }
 ): Promise<IServiceResponse<IBanner>> => {
-  const response = await apiClient.put(`/banners/${bannerId}`, data);
+  const response = await apiClient.put(`/banners/${data.bannerId}`, data.data);
   return response.data;
 };

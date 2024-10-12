@@ -27,6 +27,5 @@ export interface IBanner {
     title: string;
     choosenImage: string;
     carId: string;
-    active: boolean;
     car : ICar
   }

@@ -39,5 +39,6 @@ export const updateCarBrand = async (
   data: { brandName: string }
 ): Promise<IServiceResponse<ICarBrand>> => {
   const response = await apiClient.put<IServiceResponse<ICarBrand>>(`/car-brands/${brandId}`, data);
+  console.log({ response })
   return response.data;
 };

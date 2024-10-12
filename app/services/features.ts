@@ -11,7 +11,7 @@ export async function getAllFeatures(currentPage : number , pageSize : number) {
 }
 
 
-export const createFeature = async  ( data : { title  : string , icon : string} ) => {
+export const createFeature = async  ( data : { title  : string , icon : File } ) => {
     const response = await apiClient.post(`/features`, data);
     return response.data;
 }

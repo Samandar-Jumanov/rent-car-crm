@@ -20,7 +20,8 @@ export const deleteModel = async ( modelId : string ) => {
        return response.data;
 }
 
-export const updateModel = async (modelId : string , brandName : string ) => {
-       const response = await apiClient.put(`/models/${modelId}`, { brandName });
+export const updateModel = async (modelId : string , modelName : string ) => {
+       const response = await apiClient.put(`/models/${modelId}`, { modelName });
+       console.log({ response })
        return response.data;
 }

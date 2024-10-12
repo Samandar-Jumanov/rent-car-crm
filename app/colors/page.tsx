@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import PageContainer from '@/components/shared/PageContainer';
 import RightSidebar from '@/components/shared/RightSidebar';
 import { useBar } from '@/lib/hooks/useRightSide';
-import { getAllColors, createColor, deleteColor } from '@/app/services/color';
+import { getAllColors, createColor, deleteColor, updateColor } from '@/app/services/color';
 import { ColorTableSkeleton } from '@/components/skeletons/color.skeleton';
 import { CreateColor } from '@/components/forms/colors';
 import { EmptyState } from '@/components/empty/color.empty';
@@ -56,10 +56,27 @@ function Color() {
         queryClient.invalidateQueries({ queryKey: ['colors'] });
         toast.success('Color created successfully');
         toggleBar();
+        setColorName('');
       }
     },
     onError: (error) => {
       toast.error(error.message)
+    }
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, color }: { id: string; color: string }) => updateColor(id, { color : color}),
+    onSuccess: (response) => {
+      if (response.success) {
+        queryClient.invalidateQueries({ queryKey: ['colors'] });
+        toast.success('Color updated successfully');
+        toggleBar();
+        setEditingColor(null);
+        setColorName('');
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message);
     }
   });
 
@@ -82,12 +99,23 @@ function Color() {
     toggleBar();
   };
 
+  const handleEditClick = (color: IColor) => {
+    setEditingColor(color);
+    setColorName(color.color);
+    toggleBar();
+  };
+
   const handleSubmit = () => {
     if (!colorName.trim()) {
       toast.error('Color name is required');
       return;
     }
-    createMutation.mutate({ color : colorName });
+
+    if (editingColor) {
+      updateMutation.mutate({ id: editingColor.id, color: colorName });
+    } else {
+      createMutation.mutate({ color: colorName });
+    }
   };
 
   if (colorsLoading) return <ColorTableSkeleton />;
@@ -133,11 +161,7 @@ function Color() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => {
-                              setEditingColor(color);
-                              setColorName(color.color);
-                              toggleBar();
-                            }}
+                            onClick={() => handleEditClick(color)}
                           >
                             <Pencil className="h-4 w-4" />
                           </Button>
@@ -173,7 +197,7 @@ function Color() {
       <RightSidebar 
         title={editingColor ? 'Edit Color' : 'Create Color'}
         onSubmit={handleSubmit}
-        loadingState={createMutation.isPending}
+        loadingState={createMutation.isPending || updateMutation.isPending}
       >
         <CreateColor 
           colorName={colorName}

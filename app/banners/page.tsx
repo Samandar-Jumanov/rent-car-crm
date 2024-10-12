@@ -8,9 +8,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import PageContainer from '@/components/shared/PageContainer';
 import RightSidebar from '@/components/shared/RightSidebar';
 import { useBar } from '@/lib/hooks/useRightSide';
-import { getAllBanners, createNewBanner, deleteBanner } from '@/app/services/banners';
+import { getAllBanners, createNewBanner, updateBanner, deleteBanner } from '@/app/services/banners';
 import { BannerTableSkeleton } from '@/components/skeletons/banner.skeleton';
-import { CreateBanner } from '@/components/forms/feature';
+import { CreateBanner } from '@/components/forms/banners';
 import { EmptyState } from '@/components/empty/banner.empty';
 import { IBanner } from '@/types/banner';
 import { IServiceResponse } from '@/types/server.response';
@@ -23,9 +23,9 @@ export default function Banner() {
   const { toggleBar } = useBar();
   const [editingBanner, setEditingBanner] = useState<IBanner | null>(null);
   const [title, setTitle] = useState('');
-  const [active, setActive] = useState(false);
-  const [choosenImage, setChoosenImage] = useState('');
+  const [choosenImage, setChoosenImage] = useState<File | null>(null);
   const [carId, setCarId] = useState('');
+  const [brandId, setBrandId] = useState('');
 
   const { 
     currentPage, 
@@ -34,7 +34,8 @@ export default function Banner() {
     setCurrentPage, 
     setTotalItems,
     currentDisplayStart, 
-    currentDisplayEnd 
+    currentDisplayEnd,
+    resetPagination
   } = usePaginate();
 
   const { data: bannersResponse, isLoading: bannersLoading, error: bannersError } = useQuery({
@@ -43,12 +44,17 @@ export default function Banner() {
   });
 
   useEffect(() => {
-    if (bannersResponse?.responseObject?.totalCount) {
-      setTotalItems(bannersResponse.responseObject.totalCount);
-    }
-  }, [bannersResponse?.responseObject?.totalCount, setTotalItems]);
+    resetPagination()
+  }, [])
 
-  const createMutation = useMutation<IServiceResponse<IBanner>, Error, { title: string; choosenImage: string; carId: string }>({
+  useEffect(() => {
+    if (bannersResponse?.responseObject?.totalCount !== undefined) {
+      const totalCount = bannersResponse.responseObject.totalCount;
+      setTotalItems(totalCount);
+    }
+  }, [bannersResponse?.responseObject?.totalCount, setTotalItems, currentPage, pageSize])
+
+  const createMutation = useMutation<IServiceResponse<IBanner>, Error, { title: string; choosenImage: File; carId: string }>({
     mutationFn: createNewBanner,
     onSuccess: (response) => {
       if (response.success) {
@@ -59,6 +65,20 @@ export default function Banner() {
     },
     onError: (error) => {
       toast.error(error.message || 'Failed to create banner');
+    }
+  });
+
+  const updateMutation = useMutation<IServiceResponse<IBanner>, Error,{ bannerId : string , data : {title ? : string; choosenImage ? : File; carId ?: string} }>({
+    mutationFn: updateBanner,
+    onSuccess: (response) => {
+      if (response.success) {
+        queryClient.invalidateQueries({ queryKey: ['banners'] });
+        toast.success('Banner updated successfully');
+        toggleBar();
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to update banner');
     }
   });
 
@@ -78,18 +98,46 @@ export default function Banner() {
   const handleCreateClick = () => {
     setEditingBanner(null);
     setTitle('');
-    setActive(false);
-    setChoosenImage('');
+    setChoosenImage(null);
     setCarId('');
+    setBrandId('');
+    toggleBar();
+  };
+
+  const handleEditClick = (banner: IBanner) => {
+    setEditingBanner(banner);
+    setTitle(banner.title);
+    setCarId(banner.carId);
+    setBrandId(banner.car.brendId || '');
+    setChoosenImage(null); 
     toggleBar();
   };
 
   const handleSubmit = () => {
-    if (!title.trim() || !choosenImage.trim() || !carId.trim()) {
-      toast.error('All fields are required');
+    if (!title.trim() || !carId.trim()) {
+      toast.error('Title and Car ID are required');
       return;
     }
-    createMutation.mutate({ title, choosenImage, carId });
+
+    if (editingBanner) {
+       const data = {
+                title,
+           carId,
+          ...(choosenImage && { choosenImage })
+       }
+
+      updateMutation.mutate({
+          bannerId :  editingBanner.id,
+          data  
+      });
+    } else {
+      if (!choosenImage) {
+        toast.error('Image is required for new banners');
+        return;
+      }
+      
+      createMutation.mutate({ title, choosenImage, carId });
+    }
   };
 
   if (bannersLoading) return <BannerTableSkeleton />;
@@ -124,7 +172,6 @@ export default function Banner() {
                     <TableHead>Nomi</TableHead>
                     <TableHead>Rasm</TableHead>
                     <TableHead>Avtomobil</TableHead>
-                    <TableHead>Holat</TableHead>
                     <TableHead className="w-[120px]">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -137,20 +184,12 @@ export default function Banner() {
                         <img src={banner.choosenImage} alt={banner.title} className="w-16 h-16 object-cover" />
                       </TableCell>
                       <TableCell>{banner.car.title}</TableCell>
-                      <TableCell>{banner.active ? 'Active' : 'Inactive'}</TableCell>
                       <TableCell>
                         <div className="flex space-x-2">
                           <Button
                             variant="outline"
                             size="icon"
-                            onClick={() => {
-                              setEditingBanner(banner);
-                              setTitle(banner.title);
-                              setActive(banner.active);
-                              setChoosenImage(banner.choosenImage);
-                              setCarId(banner.carId);
-                              toggleBar();
-                            }}
+                            onClick={() => handleEditClick(banner)}
                           >
                             <Pencil className="h-4 w-4" />
                           </Button>
@@ -186,17 +225,18 @@ export default function Banner() {
       <RightSidebar 
         title={editingBanner ? 'Banner tahrirlash' : 'Banner yaratish'}
         onSubmit={handleSubmit}
-        loadingState={createMutation.isPending}
+        loadingState={createMutation.isPending || updateMutation.isPending}
       >
         <CreateBanner 
           setTitle={setTitle}
-          setActive={setActive}
-          setChoosenImage={setChoosenImage}
           setCarId={setCarId}
           title={title}
-          active={active}
-          choosenImage={choosenImage}
           carId={carId}
+          brandId={brandId}
+          setBrandId={setBrandId}
+          image={choosenImage}
+          setImage={setChoosenImage}
+          isEditing={!!editingBanner}
         />
       </RightSidebar>
     </PageContainer>

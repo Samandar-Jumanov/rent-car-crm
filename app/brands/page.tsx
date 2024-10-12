@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Pencil, Trash2 } from "lucide-react";
@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import PageContainer from '@/components/shared/PageContainer';
 import RightSidebar from '@/components/shared/RightSidebar';
 import { useBar } from '@/lib/hooks/useRightSide';
-import { getAllCarBrands, createCarBrand, deleteCarBrand } from '@/app/services/carBrend';
+import { getAllCarBrands, createCarBrand, deleteCarBrand, updateCarBrand } from '@/app/services/carBrend';
 import { CarBrandTableSkeleton } from '@/components/skeletons/car-brand.skeleton';
 import { CarBrandForm } from '@/components/forms/brand';
 import { EmptyState } from '@/components/empty/car-brand';
@@ -25,7 +25,7 @@ interface PaginatedResponse<T> {
 
 function CarBrands() {
   const queryClient = useQueryClient();
-  const { toggleBar } = useBar();
+  const { isOpen, toggleBar } = useBar();
   const [editingBrand, setEditingBrand] = useState<ICarBrand | null>(null);
   const [brandName, setBrandName] = useState('');
 
@@ -58,6 +58,23 @@ function CarBrands() {
         queryClient.invalidateQueries({ queryKey: ['car-brands'] });
         toast.success('Brand created successfully');
         toggleBar();
+        setBrandName('');
+      }
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
+    }
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: (data: { id: string; brandName: string }) => updateCarBrand(data.id, { brandName : data.brandName }),
+    onSuccess: (response) => {
+      if (response.success) {
+        queryClient.invalidateQueries({ queryKey: ['car-brands'] });
+        toast.success('Brand updated successfully');
+        toggleBar();
+        setEditingBrand(null);
+        setBrandName('');
       }
     },
     onError: (error: Error) => {
@@ -78,24 +95,34 @@ function CarBrands() {
     }
   });
 
-  const handleCreateClick = () => {
+  const handleCreateClick = useCallback(() => {
     setEditingBrand(null);
     setBrandName('');
     toggleBar();
-  };
+  }, [toggleBar]);
 
-  const handleSubmit = () => {
+  const handleEditClick = useCallback((brand: ICarBrand) => {
+    setEditingBrand(brand);
+    setBrandName(brand.carBrend);
+    toggleBar();
+  }, [toggleBar]);
+
+  const handleSubmit = useCallback(() => {
     if (!brandName.trim()) {
       toast.error('Brand name is required');
       return;
     }
-    createMutation.mutate({ brandName });
-  };
+    if (editingBrand) {
+      updateMutation.mutate({ id: editingBrand.id, brandName });
+    } else {
+      createMutation.mutate({ brandName });
+    }
+  }, [brandName, editingBrand, updateMutation, createMutation]);
 
   if (brandsLoading) return <CarBrandTableSkeleton />;
   if (brandsError) return <div className="text-center text-red-600 py-10">Error loading data</div>;
 
-  const {  carBrands, totalCount } = brandsResponse?.responseObject || { items: [], totalCount: 0 };
+  const { carBrands, totalCount } = brandsResponse?.responseObject || { carBrands: [], totalCount: 0 };
   const isEmpty = carBrands.length === 0;
 
   return (
@@ -135,11 +162,7 @@ function CarBrands() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => {
-                              setEditingBrand(brand);
-                              setBrandName(brand.carBrend);
-                              toggleBar();
-                            }}
+                            onClick={() => handleEditClick(brand)}
                           >
                             <Pencil className="h-4 w-4" />
                           </Button>
@@ -172,16 +195,18 @@ function CarBrands() {
         </div>
       </div>
 
-      <RightSidebar 
-        title={editingBrand ? 'Edit Brand' : 'Create Brand'}
-        onSubmit={handleSubmit}
-        loadingState={createMutation.isPending}
-      >
-        <CarBrandForm 
-          brandName={brandName}
-          onBrandNameChange={setBrandName}
-        />
-      </RightSidebar>
+      {isOpen && (
+        <RightSidebar 
+          title={editingBrand ? 'Edit Brand' : 'Create Brand'}
+          onSubmit={handleSubmit}
+          loadingState={createMutation.isPending || updateMutation.isPending}
+        >
+          <CarBrandForm 
+            brandName={brandName}
+            onBrandNameChange={setBrandName}
+          />
+        </RightSidebar>
+      )}
     </PageContainer>
   );
 }

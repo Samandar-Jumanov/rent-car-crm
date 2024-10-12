@@ -21,6 +21,13 @@ export const createColor = async (colorData: { color: string }): Promise<IServic
   return response.data;
 };
 
+export const updateColor = async ( id : string , colorData: { color: string }): Promise<IServiceResponse<IColor>> => {
+  const response = await apiClient.put(`/car-colors/${id}`,colorData);
+  console.log({ response }); 
+  return response.data;
+};
+
+
 export const deleteColor = async (id: string): Promise<IServiceResponse<void>> => {
   const response = await apiClient.delete(`/car-colors/${id}`);
   return response.data;

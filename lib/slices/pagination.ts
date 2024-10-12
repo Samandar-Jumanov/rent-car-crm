@@ -21,13 +21,16 @@ const paginationSlice = createSlice({
     },
     setPageSize: (state, action: PayloadAction<number>) => {
       state.pageSize = action.payload;
-      state.currentPage = 1; 
+      state.currentPage = 1; // Reset to first page when changing page size
     },
     setTotalItems: (state, action: PayloadAction<number>) => {
       state.totalItems = action.payload;
     },
+    resetPagination: () => {
+      return initialState;
+    },
   },
 });
 
-export const { setCurrentPage, setPageSize, setTotalItems } = paginationSlice.actions;
+export const { setCurrentPage, setPageSize, setTotalItems, resetPagination } = paginationSlice.actions;
 export default paginationSlice.reducer;

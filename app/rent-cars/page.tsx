@@ -7,7 +7,7 @@ import { PlusCircle } from "lucide-react";
 import PageContainer from '@/components/shared/PageContainer';
 import RightSidebar from '@/components/shared/RightSidebar';
 import { useBar } from '@/lib/hooks/useRightSide';
-import { getAllBrands, createBrand, deleteBrand } from '../services/rent-cars';
+import { getAllBrands, createBrand, deleteBrand, updateBrand } from '../services/rent-cars';
 import { RentCarTableSkeleton } from '@/components/skeletons/rent-car.skeleton';
 import RentCarForm from '@/components/forms/rent-car';
 import { EmptyState } from '@/components/empty/rent-car.empty';
@@ -67,10 +67,27 @@ function RentCars() {
         setFormData(initialFormData);
       }
     },
+
     onError: (error: Error) => {
       toast.error(error.message);
     }
   });
+
+  const updateMutation = useMutation({
+  mutationFn: updateBrand,
+  onSuccess: (response) => {
+    if (response.success) {
+      queryClient.invalidateQueries({ queryKey: ['brands'] });
+      toast.success('Brand updated successfully');
+      toggleBar();
+      setEditingBrand(null);
+      setFormData(initialFormData);
+    }
+  },
+  onError: (error: Error) => {
+    toast.error(error.message);
+  }
+});
 
   const deleteMutation = useMutation({
     mutationFn: deleteBrand,
@@ -93,8 +110,22 @@ function RentCars() {
     toggleBar();
   }, [toggleBar]);
 
+  const handleEditClick = useCallback((brand: IRentCar) => {
+    setEditingBrand(brand);
+    setFormData({
+      name: brand.brendName,
+      phone: brand.ownerNumber,
+      password: '', // Assuming we don't want to pre-fill the password
+      logo: brand.logo,
+      regionId: brand.city.regionId,
+      cityId: brand.city.id,
+    });
+    toggleBar();
+  }, [toggleBar]);
+
   const handleSubmit = useCallback(() => {
     const data = {
+      id: editingBrand ? editingBrand.id : '', 
       brendName: formData.name,
       ownerNumber: formData.phone,
       password: formData.password,
@@ -102,8 +133,13 @@ function RentCars() {
       regionId: formData.regionId,
       cityId: formData.cityId,
     };
-    createMutation.mutate(data);
-  }, [formData, createMutation]);
+    
+    if (editingBrand) {
+      updateMutation.mutate( data );
+    } else {
+      createMutation.mutate(data);
+    }
+  }, [formData, createMutation, updateMutation, editingBrand]);
 
   const handleInputChange = useCallback((name: string, value: string) => {
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -114,7 +150,6 @@ function RentCars() {
 
   const { brands, totalCount } = brandsResponse?.responseObject || { brands: [], totalCount: 0 };
   const isEmpty = brands.length === 0;
-
 
   return (
     <PageContainer 
@@ -138,6 +173,7 @@ function RentCars() {
               <RentCarTable 
                 brands={brands}
                 onDelete={(id) => deleteMutation.mutate(id)}
+                onEdit={handleEditClick}
                 loading={deleteMutation.isPending}
                 setLoading={() => {}}
               />
@@ -160,7 +196,7 @@ function RentCars() {
         <RightSidebar 
           title={editingBrand ? 'Rent carni tahrirlash' : 'Yangi yaratish'}
           onSubmit={handleSubmit}
-          loadingState={createMutation.isPending}
+          loadingState={createMutation.isPending || updateMutation.isPending}
         >
           <RentCarForm 
             formData={formData}

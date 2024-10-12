@@ -18,9 +18,10 @@ import { IRentCar } from '@/types/rent-car';
 export const RentCarTable: React.FC<{
   brands: IRentCar[];
   onDelete: (id: string) => void;
+  onEdit: (brand: IRentCar) => void;
   loading: boolean;
   setLoading: (value: boolean) => void;
-}> = ({ brands,  onDelete, loading, setLoading }) => {
+}> = ({ brands, onDelete, onEdit, loading, setLoading }) => {
   const [deletingBrandId, setDeletingBrandId] = useState<string | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
@@ -68,7 +69,7 @@ export const RentCarTable: React.FC<{
               </TableCell>
               <TableCell className="py-3 px-4 font-medium text-gray-800">{brand.brendName}</TableCell>
               <TableCell className="py-3 px-4 text-gray-600">{brand.ownerNumber}</TableCell>
-              <TableCell className="py-3 px-4 text-gray-600">{brand.city.name} , {brand.city.region.name}</TableCell>
+              <TableCell className="py-3 px-4 text-gray-600">{brand.city.name}, {brand.city.region.name}</TableCell>
               <TableCell className="py-3 px-4">
                 <div className="flex items-center">
                   <Star className={cn(
@@ -86,6 +87,7 @@ export const RentCarTable: React.FC<{
                     variant="outline" 
                     size="sm"
                     className="p-1 hover:bg-blue-50"
+                    onClick={() => onEdit(brand)}
                   >
                     <Pencil className="h-4 w-4 text-blue-600" />
                   </Button>

@@ -23,7 +23,7 @@ function Features() {
   const { toggleBar } = useBar();
   const [editingFeature, setEditingFeature] = useState<IFeature | null>(null);
   const [featureTitle, setFeatureTitle] = useState('');
-  const [featureIcon, setFeatureIcon] = useState('');
+  const [featureIcon, setFeatureIcon] = useState<File | null>(null);
 
   const { 
     currentPage, 
@@ -93,16 +93,16 @@ function Features() {
   const handleCreateClick = () => {
     setEditingFeature(null);
     setFeatureTitle('');
-    setFeatureIcon('');
+    setFeatureIcon(null);
     toggleBar();
   };
 
   const handleSubmit = () => {
-    if (!featureTitle.trim() || !featureIcon.trim()) {
+    if (!featureTitle.trim() || !featureIcon) {
       toast.error('Feature title and icon are required');
       return;
     }
-    createMutation.mutate({ title: featureTitle, icon: featureIcon });
+    createMutation.mutate({ title: featureTitle, icon: featureIcon  });
   };
 
   const handleDelete = (id: string) => {
@@ -159,7 +159,6 @@ function Features() {
                             onClick={() => {
                               setEditingFeature(feature);
                               setFeatureTitle(feature.title);
-                              setFeatureIcon(feature.icon);
                               toggleBar();
                             }}
                           >

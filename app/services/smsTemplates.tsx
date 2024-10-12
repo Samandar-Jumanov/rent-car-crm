@@ -17,8 +17,8 @@ export const createNewSmsTemplate = async  ( data : { title  : string , content 
 }
 
 
-export const updateSmsTemplate = async  (data : { title  : string , link : string}  ) => {
-    const response = await apiClient.put(`/sms-templates`, data);
+export const updateSmsTemplate = async  ( id : string , data : { title  : string , content : string}  ) => {
+    const response = await apiClient.put(`/sms-templates/${id}`, data);
     return response.data;
 }
 

@@ -5,6 +5,16 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Pencil, Trash2 } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import PageContainer from '@/components/shared/PageContainer';
 import RightSidebar from '@/components/shared/RightSidebar';
 import { useBar } from '@/lib/hooks/useRightSide';
@@ -14,15 +24,19 @@ import { CreateTemplate } from '@/components/forms/template';
 import { EmptyState } from '@/components/empty/template.empty';
 import { ITemplate } from '@/types/template.type';
 import { IServiceResponse } from '@/types/server.response';
-import toast from 'react-hot-toast';
 import Pagination from '@/components/Pagination';
 import { usePaginate } from '@/lib/hooks/usePagination';
+import toast from 'react-hot-toast';
 
 function Templates() {
   const queryClient = useQueryClient();
   const { toggleBar } = useBar();
   const [editingTemplate, setEditingTemplate] = useState<ITemplate | null>(null);
   const [formData, setFormData] = useState({ title: '', content: '' });
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{ isOpen: boolean; templateId: string | null }>({
+    isOpen: false,
+    templateId: null,
+  });
 
   const { 
     currentPage, 
@@ -53,26 +67,29 @@ function Templates() {
     onSuccess: (response) => {
       if (response.success) {
         queryClient.invalidateQueries({ queryKey: ['templates'] });
-        toast.success('Template created successfully');
+        toast.success("Template created successfully");
         toggleBar();
+        setFormData({ title: '', content: '' });
       }
     },
-    onError: (error: Error) => {
-      toast.error(error.message)
+    onError: () => {
+      toast.error("Could not create template");
     }
   });
 
   const updateMutation = useMutation({
-    mutationFn: updateSmsTemplate,
+    mutationFn: ({ id, data }: { id: string;  data : { title : string , content : string } }) => updateSmsTemplate(id,  data ),
     onSuccess: (response) => {
       if (response.success) {
         queryClient.invalidateQueries({ queryKey: ['templates'] });
-        toast.success('Template updated successfully');
+        toast.success("Template updated successfully");
         toggleBar();
+        setEditingTemplate(null);
+        setFormData({ title: '', content: '' });
       }
     },
-    onError: (error: Error) => {
-      toast.error(error.message)
+    onError: () => {
+      toast.error("Something went wrong while updating");
     }
   });
 
@@ -81,11 +98,11 @@ function Templates() {
     onSuccess: (response) => {
       if (response.success) {
         queryClient.invalidateQueries({ queryKey: ['templates'] });
-        toast.success('Template deleted successfully');
+        toast.success("Template deleted successfully");
       }
     },
-    onError: (error: Error) => {
-      toast.error(error.message)
+    onError: () => {
+      toast.error("Could not delete template");
     }
   });
 
@@ -95,18 +112,41 @@ function Templates() {
     toggleBar();
   };
 
-  const handleSubmit = () => {
-    // if (editingTemplate) {
-    //   updateMutation.mutate({ id: editingTemplate.id, ...formData });
-    // } else {
-      createMutation.mutate(formData);
-    // }
+  const handleEditClick = (template: ITemplate) => {
+    setEditingTemplate(template);
+    setFormData({
+      title: template.title,
+      content: template.content
+    });
+    toggleBar();
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to delete this template?')) {
-      deleteMutation.mutate(id);
+  const handleSubmit = () => {
+
+    const data : { title : string , content : string } = {
+        title : formData.title,
+        content : formData.content
     }
+    if (editingTemplate) {
+      updateMutation.mutate({ id : editingTemplate.id , data});
+    } else {
+      createMutation.mutate(formData);
+    }
+  };
+
+  const handleDeleteClick = (id: string) => {
+    setDeleteConfirmation({ isOpen: true, templateId: id });
+  };
+
+  const handleConfirmDelete = () => {
+    if (deleteConfirmation.templateId) {
+      deleteMutation.mutate(deleteConfirmation.templateId);
+    }
+    setDeleteConfirmation({ isOpen: false, templateId: null });
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteConfirmation({ isOpen: false, templateId: null });
   };
 
   const handleFormChange = (newData: { title: string; content: string }) => {
@@ -160,21 +200,14 @@ function Templates() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => {
-                              setEditingTemplate(template);
-                              setFormData({
-                                title: template.title,
-                                content: template.content
-                              });
-                              toggleBar();
-                            }}
+                            onClick={() => handleEditClick(template)}
                           >
                             <Pencil className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => handleDelete(template.id)}
+                            onClick={() => handleDeleteClick(template.id)}
                           >
                             <Trash2 className="h-4 w-4 text-red-500" />
                           </Button>
@@ -209,6 +242,21 @@ function Templates() {
           onChange={handleFormChange}
         />
       </RightSidebar>
+
+      <AlertDialog open={deleteConfirmation.isOpen} onOpenChange={handleCancelDelete}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure you want to delete this template?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the template.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </PageContainer>
   );
 }
