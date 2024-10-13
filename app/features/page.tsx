@@ -17,6 +17,16 @@ import { IServiceResponse } from '@/types/server.response';
 import toast from 'react-hot-toast';
 import Pagination from '@/components/Pagination';
 import { usePaginate } from '@/lib/hooks/usePagination';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 function Features() {
   const queryClient = useQueryClient();
@@ -24,6 +34,8 @@ function Features() {
   const [editingFeature, setEditingFeature] = useState<IFeature | null>(null);
   const [featureTitle, setFeatureTitle] = useState('');
   const [featureIcon, setFeatureIcon] = useState<File | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [featureToDelete, setFeatureToDelete] = useState<string | null>(null);
 
   const { 
     currentPage, 
@@ -55,7 +67,6 @@ function Features() {
       if (response.success) {
         queryClient.invalidateQueries({ queryKey: ['features'] });
         toast.success('Feature created successfully');
-        toggleBar();
       }
     },
     onError: (error: Error) => {
@@ -64,12 +75,11 @@ function Features() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: updateFeature,
+    mutationFn: ({ id, title }: { id: string; title: string }) => updateFeature(id, { title }),
     onSuccess: (response) => {
       if (response.success) {
         queryClient.invalidateQueries({ queryKey: ['features'] });
         toast.success('Feature updated successfully');
-        toggleBar();
       }
     },
     onError: (error: Error) => {
@@ -98,17 +108,24 @@ function Features() {
   };
 
   const handleSubmit = () => {
-    if (!featureTitle.trim() || !featureIcon) {
-      toast.error('Feature title and icon are required');
-      return;
+    if (editingFeature) {
+      updateMutation.mutate({ id: editingFeature.id, title: featureTitle });
+    } else {
+      createMutation.mutate({ title: featureTitle, icon: featureIcon as File });
     }
-    createMutation.mutate({ title: featureTitle, icon: featureIcon  });
   };
 
-  const handleDelete = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this feature?')) {
-      deleteMutation.mutate(id);
+  const handleDeleteClick = (id: string) => {
+    setFeatureToDelete(id);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (featureToDelete) {
+      deleteMutation.mutate(featureToDelete);
     }
+    setIsDeleteDialogOpen(false);
+    setFeatureToDelete(null);
   };
 
   if (featuresLoading) return <FeatureTableSkeleton />;
@@ -159,6 +176,7 @@ function Features() {
                             onClick={() => {
                               setEditingFeature(feature);
                               setFeatureTitle(feature.title);
+                              setFeatureIcon(null);
                               toggleBar();
                             }}
                           >
@@ -167,7 +185,7 @@ function Features() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => handleDelete(feature.id)}
+                            onClick={() => handleDeleteClick(feature.id)}
                           >
                             <Trash2 className="h-4 w-4 text-red-500" />
                           </Button>
@@ -202,8 +220,24 @@ function Features() {
           setFeatureTitle={setFeatureTitle}
           featureIcon={featureIcon}
           setFeatureIcon={setFeatureIcon}
+          isEditing={!!editingFeature}
         />
       </RightSidebar>
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure you want to delete this feature?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the feature.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </PageContainer>
   );
 }

@@ -17,6 +17,16 @@ import { IServiceResponse } from '@/types/server.response';
 import toast from 'react-hot-toast';
 import Pagination from '@/components/Pagination';
 import { usePaginate } from '@/lib/hooks/usePagination';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface PaginatedResponse<T> {
   items: T[];
@@ -28,6 +38,8 @@ function CarBrands() {
   const { isOpen, toggleBar } = useBar();
   const [editingBrand, setEditingBrand] = useState<ICarBrand | null>(null);
   const [brandName, setBrandName] = useState('');
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [brandToDelete, setBrandToDelete] = useState<ICarBrand | null>(null);
 
   const { 
     currentPage, 
@@ -57,7 +69,7 @@ function CarBrands() {
       if (response.success) {
         queryClient.invalidateQueries({ queryKey: ['car-brands'] });
         toast.success('Brand created successfully');
-        toggleBar();
+
         setBrandName('');
       }
     },
@@ -72,7 +84,6 @@ function CarBrands() {
       if (response.success) {
         queryClient.invalidateQueries({ queryKey: ['car-brands'] });
         toast.success('Brand updated successfully');
-        toggleBar();
         setEditingBrand(null);
         setBrandName('');
       }
@@ -92,6 +103,10 @@ function CarBrands() {
     },
     onError: () => {
       toast.error('Failed to delete brand');
+    },
+    onSettled: () => {
+      setDeleteConfirmOpen(false);
+      setBrandToDelete(null);
     }
   });
 
@@ -106,6 +121,22 @@ function CarBrands() {
     setBrandName(brand.carBrend);
     toggleBar();
   }, [toggleBar]);
+
+  const handleDeleteClick = useCallback((brand: ICarBrand) => {
+    setBrandToDelete(brand);
+    setDeleteConfirmOpen(true);
+  }, []);
+
+  const handleConfirmDelete = useCallback(() => {
+    if (brandToDelete) {
+      deleteMutation.mutate(brandToDelete.id);
+    }
+  }, [brandToDelete, deleteMutation]);
+
+  const handleCancelDelete = useCallback(() => {
+    setDeleteConfirmOpen(false);
+    setBrandToDelete(null);
+  }, []);
 
   const handleSubmit = useCallback(() => {
     if (!brandName.trim()) {
@@ -169,8 +200,7 @@ function CarBrands() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => deleteMutation.mutate(brand.id)}
-                            disabled={deleteMutation.isPending}
+                            onClick={() => handleDeleteClick(brand)}
                           >
                             <Trash2 className="h-4 w-4 text-red-500" />
                           </Button>
@@ -207,6 +237,22 @@ function CarBrands() {
           />
         </RightSidebar>
       )}
+
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the brand
+              {brandToDelete?.carBrend}.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleCancelDelete}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </PageContainer>
   );
 }

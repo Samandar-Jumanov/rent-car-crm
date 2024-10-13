@@ -5,7 +5,7 @@ import { getAllRegions } from '@/app/services/regions';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IServiceResponse } from '@/types/server.response';
 
 interface Region {
@@ -23,17 +23,18 @@ interface FormData {
   name: string;
   phone: string;
   password: string;
-  logo: string;
+  logo: File | null;
   regionId: string;
   cityId: string;
 }
 
 interface RentCarFormProps {
   formData: FormData;
-  handleInputChange: (name: string, value: string) => void;
+  handleInputChange: (name: string, value: string | File ) => void;
+  isEditing: boolean;
 }
 
-const RentCarForm: React.FC<RentCarFormProps> = ({ formData, handleInputChange }) => {
+const RentCarForm: React.FC<RentCarFormProps> = ({ formData, handleInputChange, isEditing }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [previewLogo, setPreviewLogo] = useState<string>('');
 
@@ -54,13 +55,12 @@ const RentCarForm: React.FC<RentCarFormProps> = ({ formData, handleInputChange }
     if (file) {
       const objectUrl = URL.createObjectURL(file);
       setPreviewLogo(objectUrl);
-
       const reader = new FileReader();
       reader.onloadend = () => {
-        const base64String = reader.result as string;
-        handleInputChange('logo', base64String);
+        // You can add additional logic here if needed
       };
       reader.readAsDataURL(file);
+      handleInputChange("logo", file);
     }
   };
 
@@ -68,59 +68,13 @@ const RentCarForm: React.FC<RentCarFormProps> = ({ formData, handleInputChange }
   if (regionsError) return <div className="text-red-500 text-center">Error loading regions: {(regionsError as Error).message}</div>;
 
   return (
-    <Card className="max-w-2xl mx-auto shadow-lg">
+    <form className="max-w-2xl mx-auto shadow-lg">
       <CardHeader>
-        <CardTitle className="text-2xl font-bold text-center">Rent Car Registration</CardTitle>
+        <CardTitle className="text-2xl font-bold text-center">
+          {isEditing ? 'Edit Rent Car' : 'Rent Car Registration'}
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Logo upload section */}
-        <div className="space-y-2">
-          <Label htmlFor="logo" className="text-lg font-semibold">Company Logo</Label>
-          <div className="mt-1 flex items-center space-x-4">
-            {previewLogo ? (
-              <div className="relative h-24 w-24">
-                <img 
-                  src={previewLogo}
-                  alt="Logo preview"
-                  className="rounded-lg object-cover h-full w-full border-2 border-gray-200 shadow-sm"
-                />
-                <button
-                  type="button"
-                  className="absolute -top-2 -right-2 rounded-full bg-red-100 p-1 text-red-600 hover:bg-red-200 transition-colors duration-200"
-                  onClick={() => {
-                    setPreviewLogo("");
-                    handleInputChange('logo', "");
-                  }}
-                >
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-            ) : (
-              <div className="h-24 w-24 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center text-gray-400">
-                <Upload size={24} />
-              </div>
-            )}
-            <div className="flex-1">
-              <Input
-                id="logo"
-                name="logo"
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-              <Label htmlFor="logo" className="cursor-pointer inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                Choose file
-              </Label>
-              <p className="mt-1 text-sm text-gray-500">
-                Recommended: Square image, at least 200x200 pixels
-              </p>
-            </div>
-          </div>
-        </div>
-
         {/* Name input */}
         <div className="space-y-2">
           <Label htmlFor="name" className="text-lg font-semibold">Company Name</Label>
@@ -149,100 +103,137 @@ const RentCarForm: React.FC<RentCarFormProps> = ({ formData, handleInputChange }
             className="w-full"
           />
         </div>
-
-        {/* Password input */}
-        <div className="space-y-2">
-          <Label htmlFor="password" className="text-lg font-semibold">Password</Label>
-          <div className="relative">
-            <Input
-              id="password"
-              name="password"
-              type={showPassword ? 'text' : 'password'}
-              value={formData.password}
-              onChange={(e) => handleInputChange('password', e.target.value)}
-              placeholder="Enter password"
-              required
-              className="w-full pr-10"
-            />
-            <button
-              type="button"
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-500 focus:outline-none"
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              {showPassword ? (
-                <EyeOff className="h-5 w-5" aria-hidden="true" />
-              ) : (
-                <Eye className="h-5 w-5" aria-hidden="true" />
-              )}
-            </button>
-          </div>
-          <p className="text-sm text-gray-500">
-            Password must be at least 8 characters long
-          </p>
-        </div>
-
-        {/* Region select */}
-        <div className="space-y-2">
-          <Label htmlFor="region" className="text-lg font-semibold">Region</Label>
-          <Select 
-            onValueChange={(value) => {
-              handleInputChange('regionId', value);
-              handleInputChange('cityId', '');
-            }} 
-            value={formData.regionId}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select a region" />
-            </SelectTrigger>
-            <SelectContent>
-              {regions.map((region: Region) => (
-                <SelectItem key={region.id} value={region.id}>
-                  {region.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {formData.regionId && (
-          <div className="space-y-2">
-            <Label htmlFor="city" className="text-lg font-semibold">City</Label>
-            <Select onValueChange={(value) => handleInputChange('cityId', value)} value={formData.cityId}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select a city" />
-              </SelectTrigger>
-              <SelectContent>
-                {selectedRegion?.cities.length === 0 ? (
-                  <SelectItem value="no-cities">No cities available</SelectItem>
+        
+        {!isEditing && (
+          <>
+            {/* Logo upload */}
+            <div className="space-y-2">
+              <Label htmlFor="logo" className="text-lg font-semibold">Company Logo</Label>
+              <div className="mt-1 flex items-center space-x-4">
+                {previewLogo ? (
+                  <div className="relative h-24 w-24">
+                    <img 
+                      src={previewLogo}
+                      alt="Logo preview"
+                      className="rounded-lg object-cover h-full w-full border-2 border-gray-200 shadow-sm"
+                    />
+                    <button
+                      type="button"
+                      className="absolute -top-2 -right-2 rounded-full bg-red-100 p-1 text-red-600 hover:bg-red-200 transition-colors duration-200"
+                      onClick={() => {
+                        setPreviewLogo("");
+                        handleInputChange('logo', "");
+                      }}
+                    >
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
                 ) : (
-                  selectedRegion?.cities.map((city: City) => (
-                    <SelectItem key={city.id} value={city.id}>
-                      {city.name}
-                    </SelectItem>
-                  ))
+                  <div className="h-24 w-24 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center text-gray-400">
+                    <Upload size={24} />
+                  </div>
                 )}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
+                <div className="flex-1">
+                  <Input
+                    id="logo"
+                    name="logo"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                  <Label htmlFor="logo" className="cursor-pointer inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Choose file
+                  </Label>
+                  <p className="mt-1 text-sm text-gray-500">
+                    Recommended: Square image, at least 200x200 pixels
+                  </p>
+                </div>
+              </div>
+            </div>
 
-      
-
-        {/* Form Hints */}
-        <Card className="bg-blue-50 border-blue-200">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-              </svg>
-              <p className="text-sm text-blue-700 font-medium">
-                All fields are required to complete the registration.
+            {/* Password input */}
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-lg font-semibold">Password</Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={formData.password}
+                  onChange={(e) => handleInputChange('password', e.target.value)}
+                  placeholder="Enter password"
+                  required
+                  className="w-full pr-10"
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-500 focus:outline-none"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" aria-hidden="true" />
+                  ) : (
+                    <Eye className="h-5 w-5" aria-hidden="true" />
+                  )}
+                </button>
+              </div>
+              <p className="text-sm text-gray-500">
+                Password must be at least 8 characters long
               </p>
             </div>
-          </CardContent>
-        </Card>
+
+            {/* Region select */}
+            <div className="space-y-2">
+              <Label htmlFor="region" className="text-lg font-semibold">Region</Label>
+              <Select 
+                onValueChange={(value) => {
+                  handleInputChange('regionId', value);
+                  handleInputChange('cityId', '');
+                }} 
+                value={formData.regionId}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a region" />
+                </SelectTrigger>
+                <SelectContent>
+                  {regions.map((region: Region) => (
+                    <SelectItem key={region.id} value={region.id}>
+                      {region.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* City select */}
+            {formData.regionId && (
+              <div className="space-y-2">
+                <Label htmlFor="city" className="text-lg font-semibold">City</Label>
+                <Select onValueChange={(value) => handleInputChange('cityId', value)} value={formData.cityId}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select a city" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {selectedRegion?.cities.length === 0 ? (
+                      <SelectItem value="no-cities">No cities available</SelectItem>
+                    ) : (
+                      selectedRegion?.cities.map((city: City) => (
+                        <SelectItem key={city.id} value={city.id}>
+                          {city.name}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </>
+        )}
       </CardContent>
-    </Card>
+    </form>
   );
 };
 

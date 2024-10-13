@@ -68,8 +68,7 @@ function Templates() {
       if (response.success) {
         queryClient.invalidateQueries({ queryKey: ['templates'] });
         toast.success("Template created successfully");
-        toggleBar();
-        setFormData({ title: '', content: '' });
+        resetForm();
       }
     },
     onError: () => {
@@ -78,14 +77,12 @@ function Templates() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string;  data : { title : string , content : string } }) => updateSmsTemplate(id,  data ),
+    mutationFn: ({ id, data }: { id: string; data: { title: string, content: string } }) => updateSmsTemplate(id, data),
     onSuccess: (response) => {
       if (response.success) {
         queryClient.invalidateQueries({ queryKey: ['templates'] });
         toast.success("Template updated successfully");
-        toggleBar();
-        setEditingTemplate(null);
-        setFormData({ title: '', content: '' });
+        resetForm();
       }
     },
     onError: () => {
@@ -106,9 +103,13 @@ function Templates() {
     }
   });
 
-  const handleCreateClick = () => {
+  const resetForm = () => {
     setEditingTemplate(null);
     setFormData({ title: '', content: '' });
+  };
+
+  const handleCreateClick = () => {
+    resetForm();
     toggleBar();
   };
 
@@ -122,15 +123,14 @@ function Templates() {
   };
 
   const handleSubmit = () => {
-
-    const data : { title : string , content : string } = {
-        title : formData.title,
-        content : formData.content
-    }
+    const data = {
+      title: formData.title,
+      content: formData.content
+    };
     if (editingTemplate) {
-      updateMutation.mutate({ id : editingTemplate.id , data});
+      updateMutation.mutate({ id: editingTemplate.id, data });
     } else {
-      createMutation.mutate(formData);
+      createMutation.mutate(data);
     }
   };
 
@@ -162,7 +162,7 @@ function Templates() {
   return (
     <PageContainer 
       title="Shablonlar"
-      action={!isEmpty && (
+      action={
         <Button 
           className="bg-blue-600 hover:bg-blue-700 text-white"
           onClick={handleCreateClick}
@@ -170,7 +170,7 @@ function Templates() {
           <PlusCircle className="h-4 w-4 mr-2" />
           Shablon yaratish
         </Button>
-      )}
+      }
     >
       <div className="p-6 max-w-[1200px] mx-auto">
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">

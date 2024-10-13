@@ -12,17 +12,26 @@ import { RentCarTableSkeleton } from '@/components/skeletons/rent-car.skeleton';
 import RentCarForm from '@/components/forms/rent-car';
 import { EmptyState } from '@/components/empty/rent-car.empty';
 import { RentCarTable } from '@/components/tables/rent-car.table';
-import { IRentCar } from '@/types/rent-car';
+import { IRentCar, IRentCarFormData } from '@/types/rent-car';
 import { IServiceResponse } from '@/types/server.response';
 import toast from 'react-hot-toast';
 import Pagination from '@/components/Pagination';
 import { usePaginate } from '@/lib/hooks/usePagination';
 
-const initialFormData = {
+interface FormData {
+  name: string;
+  phone: string;
+  password: string;
+  logo: File | null;
+  regionId: string;
+  cityId: string;
+}
+
+const initialFormData: FormData = {
   name: '',
   phone: '',
   password: '',
-  logo: '',
+  logo: null,
   regionId: '',
   cityId: '',
 };
@@ -63,31 +72,28 @@ function RentCars() {
       if (response.success) {
         queryClient.invalidateQueries({ queryKey: ['brands'] });
         toast.success('Brand created successfully');
-        toggleBar();
         setFormData(initialFormData);
       }
     },
-
     onError: (error: Error) => {
       toast.error(error.message);
     }
   });
 
   const updateMutation = useMutation({
-  mutationFn: updateBrand,
-  onSuccess: (response) => {
-    if (response.success) {
-      queryClient.invalidateQueries({ queryKey: ['brands'] });
-      toast.success('Brand updated successfully');
-      toggleBar();
-      setEditingBrand(null);
-      setFormData(initialFormData);
+    mutationFn: updateBrand,
+    onSuccess: (response) => {
+      if (response.success) {
+        queryClient.invalidateQueries({ queryKey: ['brands'] });
+        toast.success('Brand updated successfully');
+        setEditingBrand(null);
+        setFormData(initialFormData);
+      }
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
     }
-  },
-  onError: (error: Error) => {
-    toast.error(error.message);
-  }
-});
+  });
 
   const deleteMutation = useMutation({
     mutationFn: deleteBrand,
@@ -115,33 +121,43 @@ function RentCars() {
     setFormData({
       name: brand.brendName,
       phone: brand.ownerNumber,
-      password: '', // Assuming we don't want to pre-fill the password
-      logo: brand.logo,
-      regionId: brand.city.regionId,
-      cityId: brand.city.id,
+      password: '',
+      logo: null,
+      regionId: '',
+      cityId: '',
     });
     toggleBar();
   }, [toggleBar]);
 
   const handleSubmit = useCallback(() => {
-    const data = {
-      id: editingBrand ? editingBrand.id : '', 
-      brendName: formData.name,
-      ownerNumber: formData.phone,
-      password: formData.password,
-      logo: formData.logo,
-      regionId: formData.regionId,
-      cityId: formData.cityId,
-    };
-    
     if (editingBrand) {
-      updateMutation.mutate( data );
+      // Only update brandName and phoneNumber when editing
+      const updateData = {
+        id: editingBrand.id,
+        brendName: formData.name,
+        ownerNumber: formData.phone,
+      };
+      updateMutation.mutate(updateData);
     } else {
-      createMutation.mutate(data);
+      // For creating a new brand, use all fields
+      const createData = {
+        brendName: formData.name,
+        ownerNumber: formData.phone,
+        password: formData.password,
+        logo: formData.logo,
+        regionId: formData.regionId,
+        cityId: formData.cityId,
+      };
+
+      if(createData.logo !== null) {
+        toast.error('Logo is required');
+        return;
+      }
+      createMutation.mutate(createData as IRentCarFormData);
     }
   }, [formData, createMutation, updateMutation, editingBrand]);
 
-  const handleInputChange = useCallback((name: string, value: string) => {
+  const handleInputChange = useCallback((name: string, value: string | File | null) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   }, []);
 
@@ -201,6 +217,7 @@ function RentCars() {
           <RentCarForm 
             formData={formData}
             handleInputChange={handleInputChange}
+            isEditing={!!editingBrand}
           />
         </RightSidebar>
       )}

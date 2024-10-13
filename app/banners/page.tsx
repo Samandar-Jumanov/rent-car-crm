@@ -17,6 +17,16 @@ import { IServiceResponse } from '@/types/server.response';
 import toast from 'react-hot-toast';
 import Pagination from '@/components/Pagination';
 import { usePaginate } from '@/lib/hooks/usePagination';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function Banner() {
   const queryClient = useQueryClient();
@@ -26,6 +36,8 @@ export default function Banner() {
   const [choosenImage, setChoosenImage] = useState<File | null>(null);
   const [carId, setCarId] = useState('');
   const [brandId, setBrandId] = useState('');
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [bannerToDelete, setBannerToDelete] = useState<string | null>(null);
 
   const { 
     currentPage, 
@@ -60,7 +72,6 @@ export default function Banner() {
       if (response.success) {
         queryClient.invalidateQueries({ queryKey: ['banners'] });
         toast.success('Banner created successfully');
-        toggleBar();
       }
     },
     onError: (error) => {
@@ -74,7 +85,6 @@ export default function Banner() {
       if (response.success) {
         queryClient.invalidateQueries({ queryKey: ['banners'] });
         toast.success('Banner updated successfully');
-        toggleBar();
       }
     },
     onError: (error) => {
@@ -140,6 +150,19 @@ export default function Banner() {
     }
   };
 
+  const handleDeleteClick = (id: string) => {
+    setBannerToDelete(id);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (bannerToDelete) {
+      deleteMutation.mutate(bannerToDelete);
+    }
+    setIsDeleteDialogOpen(false);
+    setBannerToDelete(null);
+  };
+
   if (bannersLoading) return <BannerTableSkeleton />;
   if (bannersError) return <div className="text-center text-red-600 py-10">Error loading data: {bannersError.message}</div>;
 
@@ -196,7 +219,7 @@ export default function Banner() {
                           <Button
                             variant="destructive"
                             size="icon"
-                            onClick={() => deleteMutation.mutate(banner.id)}
+                            onClick={() => handleDeleteClick(banner.id)}
                             disabled={deleteMutation.isPending}
                           >
                             <Trash2 className="h-4 w-4" />
@@ -239,6 +262,22 @@ export default function Banner() {
           isEditing={!!editingBanner}
         />
       </RightSidebar>
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure you want to delete this banner?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the banner.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </PageContainer>
+    
   );
 }

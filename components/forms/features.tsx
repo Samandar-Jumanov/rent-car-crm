@@ -8,13 +8,15 @@ interface CreateFeatureProps {
   setFeatureTitle: (title: string) => void;
   featureIcon: File | null;
   setFeatureIcon: (image: File | null) => void;
+  isEditing: boolean;
 }
 
 export function CreateFeature({
   featureTitle,
   setFeatureTitle,
   featureIcon,
-  setFeatureIcon
+  setFeatureIcon,
+  isEditing
 }: CreateFeatureProps) {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
@@ -47,37 +49,46 @@ export function CreateFeature({
           placeholder="Enter feature title"
         />
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="image">Feature Image</Label>
-        <Input
-          id="image"
-          type="file"
-          onChange={handleImageChange}
-          accept="image/*"
-        />
-      </div>
-      {imagePreview && (
-        <div className="mt-4">
-          <Label>Image Preview</Label>
-          <div className="mt-2 relative w-40 h-40 rounded-lg overflow-hidden">
-            <img
-              src={imagePreview}
-              alt="Feature preview"
-              className="w-full h-full object-cover"
+      {!isEditing && (
+        <>
+          <div className="space-y-2">
+            <Label htmlFor="image">Feature Image</Label>
+            <Input
+              id="image"
+              type="file"
+              onChange={handleImageChange}
+              accept="image/*"
             />
           </div>
-        </div>
+          {imagePreview && (
+            <div className="mt-4">
+              <Label>Image Preview</Label>
+              <div className="mt-2 relative w-40 h-40 rounded-lg overflow-hidden">
+                <img
+                  src={imagePreview}
+                  alt="Feature preview"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          )}
+          {featureIcon && (
+            <Button
+              variant="outline"
+              onClick={() => {
+                setFeatureIcon(null);
+                setImagePreview(null);
+              }}
+            >
+              Remove Image
+            </Button>
+          )}
+        </>
       )}
-      {featureIcon && (
-        <Button
-          variant="outline"
-          onClick={() => {
-            setFeatureIcon(null);
-            setImagePreview(null);
-          }}
-        >
-          Remove Image
-        </Button>
+      {isEditing && (
+        <p className="text-sm text-gray-500">
+          Note: The feature image cannot be changed when editing.
+        </p>
       )}
     </div>
   );

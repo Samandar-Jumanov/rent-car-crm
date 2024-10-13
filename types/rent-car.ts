@@ -63,10 +63,9 @@ export interface IRentCar {
  export  interface IRentCarFormData {
     brendName: string;
     ownerNumber: string;
-    logo?: string;
+    logo : File;
     carDelivery?: any;
     payment?: any;
     password : string
-    regionId : string ,
     cityId : string 
   }

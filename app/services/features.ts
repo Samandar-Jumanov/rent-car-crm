@@ -12,13 +12,16 @@ export async function getAllFeatures(currentPage : number , pageSize : number) {
 
 
 export const createFeature = async  ( data : { title  : string , icon : File } ) => {
-    const response = await apiClient.post(`/features`, data);
+    const formData = new FormData();
+    formData.append('title', data.title);
+    formData.append('icon', data.icon);
+    const response = await apiClient.post(`/features`, formData);
     return response.data;
 }
 
 
-export const updateFeature = async  (data : { title  : string , link : string}  ) => {
-    const response = await apiClient.put(`/features`, data);
+export const updateFeature = async  (id : string , data : { title : string  }  ) => {
+    const response = await apiClient.put(`/features/${id}`, data);
     return response.data;
 }
 

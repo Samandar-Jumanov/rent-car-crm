@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
@@ -17,12 +17,24 @@ import toast from 'react-hot-toast';
 import { IServiceResponse } from '@/types/server.response';
 import Pagination from '@/components/Pagination';
 import { usePaginate } from '@/lib/hooks/usePagination';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function ModelPage() {
   const queryClient = useQueryClient();
   const { toggleBar } = useBar();
   const [editingModel, setEditingModel] = useState<IModel | null>(null);
   const [modelName, setModelName] = useState("");
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [modelToDelete, setModelToDelete] = useState<IModel | null>(null);
 
   const { 
     currentPage, 
@@ -54,7 +66,6 @@ export default function ModelPage() {
       if (response.success) {
         queryClient.invalidateQueries({ queryKey: ['models'] });
         toast.success('Model created successfully');
-        toggleBar();
         setModelName("");
       }
     },
@@ -70,7 +81,6 @@ export default function ModelPage() {
       if (response.success) {
         queryClient.invalidateQueries({ queryKey: ['models'] });
         toast.success('Model updated successfully');
-        toggleBar();
         setEditingModel(null);
         setModelName("");
       }
@@ -88,24 +98,44 @@ export default function ModelPage() {
         toast.success('Model deleted successfully');
       }
     },
-    onError: ( error  ) => {
+    onError: (error: Error) => {
       toast.error(error.message);
+    },
+    onSettled: () => {
+      setDeleteConfirmOpen(false);
+      setModelToDelete(null);
     }
   });
 
-  const handleCreateClick = () => {
+  const handleCreateClick = useCallback(() => {
     setEditingModel(null);
     setModelName("");
     toggleBar();
-  };
+  }, [toggleBar]);
 
-  const handleEditClick = (model: IModel) => {
+  const handleEditClick = useCallback((model: IModel) => {
     setEditingModel(model);
     setModelName(model.modelName);
     toggleBar();
-  };
+  }, [toggleBar]);
 
-  const handleSubmit = () => {
+  const handleDeleteClick = useCallback((model: IModel) => {
+    setModelToDelete(model);
+    setDeleteConfirmOpen(true);
+  }, []);
+
+  const handleConfirmDelete = useCallback(() => {
+    if (modelToDelete) {
+      deleteMutation.mutate(modelToDelete.id);
+    }
+  }, [modelToDelete, deleteMutation]);
+
+  const handleCancelDelete = useCallback(() => {
+    setDeleteConfirmOpen(false);
+    setModelToDelete(null);
+  }, []);
+
+  const handleSubmit = useCallback(() => {
     if (!modelName.trim()) {
       toast.error('Model name cannot be empty');
       return;
@@ -116,7 +146,7 @@ export default function ModelPage() {
     } else {
       createMutation.mutate(modelName);
     }
-  };
+  }, [modelName, editingModel, updateMutation, createMutation]);
 
   if (isLoading) return <ModelTableSkeleton />;
   if (error) return <div className="text-center text-red-600 py-10">Error loading data</div>;
@@ -146,7 +176,7 @@ export default function ModelPage() {
               <ModelTable 
                 models={models}
                 onEdit={handleEditClick}
-                onDelete={(id) => deleteMutation.mutate(id)}
+                onDelete={( model : IModel ) => handleDeleteClick(model)}
                 loading={deleteMutation.isPending}
               />
               <div className="mt-6 flex flex-col sm:flex-row justify-between items-center p-4">
@@ -174,6 +204,22 @@ export default function ModelPage() {
           modelName={modelName}
         />
       </RightSidebar>
+
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the model
+              {modelToDelete?.modelName}.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleCancelDelete}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </PageContainer>
   );
 }

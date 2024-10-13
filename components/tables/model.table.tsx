@@ -7,7 +7,7 @@ import { IModel } from '@/types/model.type';
 interface ModelTableProps {
   models: IModel[];
   onEdit: (model: IModel) => void;
-  onDelete: (id: string) => void;
+  onDelete: (model : IModel ) => void;
   loading: boolean;
 }
 
@@ -43,7 +43,7 @@ export const ModelTable: React.FC<ModelTableProps> = ({
                 <Button 
                   variant="destructive" 
                   size="icon"
-                  onClick={() => onDelete(model.id)}
+                  onClick={() => onDelete(model)}
                   disabled={loading}
                 >
                   <Trash2 className="h-4 w-4" />

@@ -55,7 +55,6 @@ function Color() {
       if (response.success) {
         queryClient.invalidateQueries({ queryKey: ['colors'] });
         toast.success('Color created successfully');
-        toggleBar();
         setColorName('');
       }
     },
@@ -70,7 +69,6 @@ function Color() {
       if (response.success) {
         queryClient.invalidateQueries({ queryKey: ['colors'] });
         toast.success('Color updated successfully');
-        toggleBar();
         setEditingColor(null);
         setColorName('');
       }

@@ -17,7 +17,11 @@ export const createNewBanner  = async (data: {
   choosenImage : File,
   carId : string 
 }): Promise<IServiceResponse<IBanner>> => {
-  const response = await apiClient.post(`/banners/${data.carId}`, data);
+
+  const formData = new FormData();
+  formData.append('title', data.title);
+  formData.append('choosenImage', data.choosenImage);
+  const response = await apiClient.post(`/banners/${data.carId}`, formData);
   return response.data;
 };
 
