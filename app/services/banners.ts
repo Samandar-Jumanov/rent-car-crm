@@ -31,11 +31,29 @@ export const deleteBanner = async (brandId: string): Promise<IServiceResponse<vo
 };
 
 export const updateBanner = async (
-   data : {
-       bannerId : string ,
-       data : { title ? : string; choosenImage ? : File; carId ?: string } 
-   }
+  data: {
+    bannerId: string,
+    data: {
+      title?: string;
+      choosenImage?: File;
+    }
+  }
 ): Promise<IServiceResponse<IBanner>> => {
-  const response = await apiClient.put(`/banners/${data.bannerId}`, data.data);
+  const formData = new FormData();
+
+  if (data.data.title) {
+    formData.append('title', data.data.title);
+  }
+
+  if (data.data.choosenImage) {
+    formData.append('choosenImage', data.data.choosenImage);
+  }
+
+  const response = await apiClient.put(`/banners/${data.bannerId}`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+
   return response.data;
 };

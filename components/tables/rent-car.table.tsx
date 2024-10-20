@@ -69,7 +69,7 @@ export const RentCarTable: React.FC<{
               </TableCell>
               <TableCell className="py-3 px-4 font-medium text-gray-800">{brand.brendName}</TableCell>
               <TableCell className="py-3 px-4 text-gray-600">{brand.ownerNumber}</TableCell>
-              <TableCell className="py-3 px-4 text-gray-600">{brand.city.name}, {brand.city.region.name}</TableCell>
+              <TableCell className="py-3 px-4 text-gray-600">City name </TableCell>
               <TableCell className="py-3 px-4">
                 <div className="flex items-center">
                   <Star className={cn(

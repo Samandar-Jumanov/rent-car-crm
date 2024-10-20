@@ -204,7 +204,7 @@ export default function Banner() {
                       <TableCell>{(currentPage - 1) * pageSize + index + 1}</TableCell>
                       <TableCell>{banner.title}</TableCell>
                       <TableCell>
-                        <img src={banner.choosenImage} alt={banner.title} className="w-16 h-16 object-cover" />
+                        <img src={banner.choosenImage}  className="w-16 h-16 object-cover" />
                       </TableCell>
                       <TableCell>{banner.car.title}</TableCell>
                       <TableCell>

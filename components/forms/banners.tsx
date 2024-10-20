@@ -41,8 +41,10 @@ export const CreateBanner: React.FC<CreateBannerProps> = ({
   useEffect(() => {
     if (isEditing && currentBanner) {
       setTitle(currentBanner.title);
+      setBrandId(currentBanner.id || '');
+      setCarId(currentBanner.carId || '');
     }
-  }, [isEditing, currentBanner, setTitle]);
+  }, [isEditing, currentBanner, setTitle, setBrandId, setCarId]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -101,19 +103,19 @@ export const CreateBanner: React.FC<CreateBannerProps> = ({
               </SelectContent>
             </Select>
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="image">Image</Label>
-            <Input
-              id="image"
-              type="file"
-              onChange={handleImageUpload}
-              accept="image/*"
-            />
-            {image && <p className="text-sm text-gray-500">Selected file: {image.name}</p>}
-          </div>
         </>
       )}
+
+      <div className="space-y-2">
+        <Label htmlFor="image">Image</Label>
+        <Input
+          id="image"
+          type="file"
+          onChange={handleImageUpload}
+          accept="image/*"
+        />
+        {image && <p className="text-sm text-gray-500">Selected file: {image.name}</p>}
+      </div>
     </div>
   );
 };

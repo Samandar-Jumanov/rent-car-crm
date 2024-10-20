@@ -131,7 +131,6 @@ function RentCars() {
 
   const handleSubmit = useCallback(() => {
     if (editingBrand) {
-      // Only update brandName and phoneNumber when editing
       const updateData = {
         id: editingBrand.id,
         brendName: formData.name,
@@ -139,7 +138,6 @@ function RentCars() {
       };
       updateMutation.mutate(updateData);
     } else {
-      // For creating a new brand, use all fields
       const createData = {
         brendName: formData.name,
         ownerNumber: formData.phone,
@@ -148,12 +146,8 @@ function RentCars() {
         regionId: formData.regionId,
         cityId: formData.cityId,
       };
-
-      if(createData.logo !== null) {
-        toast.error('Logo is required');
-        return;
-      }
       createMutation.mutate(createData as IRentCarFormData);
+
     }
   }, [formData, createMutation, updateMutation, editingBrand]);
 

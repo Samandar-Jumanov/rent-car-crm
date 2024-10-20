@@ -56,9 +56,6 @@ const RentCarForm: React.FC<RentCarFormProps> = ({ formData, handleInputChange, 
       const objectUrl = URL.createObjectURL(file);
       setPreviewLogo(objectUrl);
       const reader = new FileReader();
-      reader.onloadend = () => {
-        // You can add additional logic here if needed
-      };
       reader.readAsDataURL(file);
       handleInputChange("logo", file);
     }
@@ -75,7 +72,6 @@ const RentCarForm: React.FC<RentCarFormProps> = ({ formData, handleInputChange, 
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Name input */}
         <div className="space-y-2">
           <Label htmlFor="name" className="text-lg font-semibold">Company Name</Label>
           <Input
@@ -106,7 +102,6 @@ const RentCarForm: React.FC<RentCarFormProps> = ({ formData, handleInputChange, 
         
         {!isEditing && (
           <>
-            {/* Logo upload */}
             <div className="space-y-2">
               <Label htmlFor="logo" className="text-lg font-semibold">Company Logo</Label>
               <div className="mt-1 flex items-center space-x-4">
