@@ -12,9 +12,8 @@ export async function getAllUsers(currentPage: number, pageSize: number) {
   }
 
 
-
 export const getOneUser = async ( userId : string ) => {
-    const response = await apiClient.get(`/users/${userId}`);
+    const response = await apiClient.get(`/users/single/${userId}`);
     console.log({ response });
     return response.data;
 }

@@ -5,7 +5,7 @@ import { getAllRegions } from '@/app/services/regions';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent} from "@/components/ui/card";
 import { IServiceResponse } from '@/types/server.response';
 
 interface Region {
@@ -66,11 +66,6 @@ const RentCarForm: React.FC<RentCarFormProps> = ({ formData, handleInputChange, 
 
   return (
     <form className="max-w-2xl mx-auto shadow-lg">
-      <CardHeader>
-        <CardTitle className="text-2xl font-bold text-center">
-          {isEditing ? 'Edit Rent Car' : 'Rent Car Registration'}
-        </CardTitle>
-      </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="name" className="text-lg font-semibold">Company Name</Label>
@@ -203,7 +198,6 @@ const RentCarForm: React.FC<RentCarFormProps> = ({ formData, handleInputChange, 
               </Select>
             </div>
 
-            {/* City select */}
             {formData.regionId && (
               <div className="space-y-2">
                 <Label htmlFor="city" className="text-lg font-semibold">City</Label>

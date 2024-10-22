@@ -4,6 +4,11 @@ export interface IFeature {
     icon: string;
   }
   
+
+  export interface ICFeature {
+      data : string ,
+      icon : File 
+  }
   // src/types/server.response.ts
   export interface IServiceResponse<T> {
     success: boolean;

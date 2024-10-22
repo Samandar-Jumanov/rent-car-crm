@@ -1,5 +1,6 @@
 import apiClient from "@/utils/axios";
 
+
 export async function getAllFeatures(currentPage : number , pageSize : number) {
          const response = await apiClient.get(`/features` , {
              params : {
@@ -11,11 +12,8 @@ export async function getAllFeatures(currentPage : number , pageSize : number) {
 }
 
 
-export const createFeature = async  ( data : { title  : string , icon : File } ) => {
-    const formData = new FormData();
-    formData.append('title', data.title);
-    formData.append('icon', data.icon);
-    const response = await apiClient.post(`/features`, formData);
+export const createFeature = async  (data : FormData) => {
+    const response = await apiClient.post(`/features`, data);
     return response.data;
 }
 

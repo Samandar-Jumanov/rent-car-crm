@@ -18,6 +18,7 @@ export function CreateFeature({
   setFeatureIcon,
   isEditing
 }: CreateFeatureProps) {
+  
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   useEffect(() => {

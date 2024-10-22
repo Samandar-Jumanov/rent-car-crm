@@ -63,7 +63,6 @@ export default function Requests() {
                 <TableHead>Title</TableHead>
                 <TableHead>Type</TableHead>
                 <TableHead>Created At</TableHead>
-                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -82,7 +81,6 @@ export default function Requests() {
                     </span>
                   </TableCell>
                   <TableCell>{request.createdAt ? new Date(request.createdAt).toLocaleString() : 'N/A'}</TableCell>
-                  <TableCell>Actions</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -103,6 +101,7 @@ export default function Requests() {
         {selectedRequest && (
           <>
             <div className="mb-4">
+            <p>{selectedRequest.createdAt ? new Date(selectedRequest.createdAt).toLocaleString() : 'N/A'}</p>
             </div>
             <div className="mb-4">
               <p className="font-semibold">Fikr turi:</p>

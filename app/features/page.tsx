@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Pencil, Trash2 } from "lucide-react";
+import { PlusCircle, Pencil, Trash2, ImageOff } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import PageContainer from '@/components/shared/PageContainer';
 import RightSidebar from '@/components/shared/RightSidebar';
@@ -12,7 +12,7 @@ import { getAllFeatures, createFeature, updateFeature, deleteFeature } from '@/a
 import { FeatureTableSkeleton } from '@/components/skeletons/feature.skeleton';
 import { CreateFeature } from '@/components/forms/features';
 import { EmptyState } from '@/components/empty/feature.empty';
-import { IFeature } from '@/types/feature.type';
+import {  IFeature } from '@/types/feature.type';
 import { IServiceResponse } from '@/types/server.response';
 import toast from 'react-hot-toast';
 import Pagination from '@/components/Pagination';
@@ -36,6 +36,9 @@ function Features() {
   const [featureIcon, setFeatureIcon] = useState<File | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [featureToDelete, setFeatureToDelete] = useState<string | null>(null);
+  const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
+
+
 
   const { 
     currentPage, 
@@ -100,6 +103,10 @@ function Features() {
     }
   });
 
+  const handleImageError = (featureId: string) => {
+    setImageErrors(prev => ({ ...prev, [featureId]: true }));
+  };
+
   const handleCreateClick = () => {
     setEditingFeature(null);
     setFeatureTitle('');
@@ -108,10 +115,26 @@ function Features() {
   };
 
   const handleSubmit = () => {
+    if (!featureTitle.trim()) {
+      toast.error('Feature title is required');
+      return;
+    }
+
+    if (!editingFeature && !featureIcon) {
+      toast.error('Feature icon is required');
+      return;
+    }
+
     if (editingFeature) {
       updateMutation.mutate({ id: editingFeature.id, title: featureTitle });
     } else {
-      createMutation.mutate({ title: featureTitle, icon: featureIcon as File });
+      const formData = new FormData;
+      formData.append('title', featureTitle);
+      if (featureIcon) {
+        formData.append('icon', featureIcon);
+      }
+
+      createMutation.mutate(formData);
     }
   };
 
@@ -167,7 +190,20 @@ function Features() {
                     <TableRow key={feature.id}>
                       <TableCell>{(currentPage - 1) * pageSize + index + 1}</TableCell>
                       <TableCell>{feature.title}</TableCell>
-                      <TableCell>{feature.icon}</TableCell>
+                      <TableCell>
+                        {imageErrors[feature.id] ? (
+                          <div className="flex items-center text-gray-400">
+                            <ImageOff className="h-6 w-6" />
+                          </div>
+                        ) : (
+                          <img
+                            src={feature.icon}
+                            alt={feature.title}
+                            className="h-8 w-8 object-cover rounded"
+                            onError={() => handleImageError(feature.id)}
+                          />
+                        )}
+                      </TableCell>
                       <TableCell>
                         <div className="flex space-x-2">
                           <Button

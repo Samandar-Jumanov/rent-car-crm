@@ -3,9 +3,9 @@
 import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Ban, Unlock } from "lucide-react";
+import { Ban, Unlock, UserCircle } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -55,9 +55,20 @@ export const UserTable: React.FC<IUserTableProps> = ({
             <TableCell>
               <div className="flex items-center space-x-2">
                 <Avatar className="h-8 w-8">
-                  <AvatarFallback>{user.name?.[0] || user.phoneNumber[0]}</AvatarFallback>
+                  {user.image ? (
+                    <AvatarImage src={user.image} alt={user.name || 'User'} />
+                  ) : (
+                    <AvatarFallback className="bg-gray-100">
+                      <UserCircle className="h-5 w-5 text-gray-400" />
+                    </AvatarFallback>
+                  )}
                 </Avatar>
-                <span className='text-blue-700 hover:cursor-pointer' onClick={() => routeClient(user.id)}>{user.name || 'N/A'}</span>
+                <span 
+                  className='text-blue-700 hover:cursor-pointer hover:underline' 
+                  onClick={() => routeClient(user.id)}
+                >
+                  {user.name || 'N/A'}
+                </span>
               </div>
             </TableCell>
             <TableCell>{user.phoneNumber}</TableCell>

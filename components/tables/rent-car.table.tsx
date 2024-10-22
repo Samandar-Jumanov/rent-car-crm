@@ -39,6 +39,11 @@ export const RentCarTable: React.FC<{
     }
   };
 
+  const cancelDelete = () => {
+    setIsDeleteModalOpen(false);
+    setDeletingBrandId(null);
+  };
+
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
       <Table>
@@ -56,12 +61,12 @@ export const RentCarTable: React.FC<{
         
         <TableBody>
           {brands.map((brand, index) => (
-            <TableRow key={brand.id} className="hover:bg-gray-50 border-b border-gray-200">
+            <TableRow key={index} className="hover:bg-gray-50 border-b border-gray-200">
               <TableCell className="py-3 px-4 text-gray-800">{index + 1}</TableCell>
               <TableCell className="py-3 px-4">
                 <div className="relative h-8 w-8">
                   <img 
-                    src={brand.logo || '/placeholder-brand.png'} 
+                    src={brand.logo} 
                     alt={brand.brendName}
                     className="rounded-full object-cover h-full w-full border border-gray-200"
                   />
@@ -69,7 +74,7 @@ export const RentCarTable: React.FC<{
               </TableCell>
               <TableCell className="py-3 px-4 font-medium text-gray-800">{brand.brendName}</TableCell>
               <TableCell className="py-3 px-4 text-gray-600">{brand.ownerNumber}</TableCell>
-              <TableCell className="py-3 px-4 text-gray-600">City name </TableCell>
+              <TableCell className="py-3 px-4 text-gray-600">{brand.city.name} , {brand.city.region.name}</TableCell>
               <TableCell className="py-3 px-4">
                 <div className="flex items-center">
                   <Star className={cn(
@@ -116,7 +121,7 @@ export const RentCarTable: React.FC<{
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setDeletingBrandId(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel onClick={cancelDelete}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
               className="bg-red-600 hover:bg-red-700"

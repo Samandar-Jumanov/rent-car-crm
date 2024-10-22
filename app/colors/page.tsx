@@ -5,6 +5,17 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Pencil, Trash2 } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import PageContainer from '@/components/shared/PageContainer';
 import RightSidebar from '@/components/shared/RightSidebar';
 import { useBar } from '@/lib/hooks/useRightSide';
@@ -23,6 +34,7 @@ function Color() {
   const { toggleBar } = useBar();
   const [editingColor, setEditingColor] = useState<IColor | null>(null);
   const [colorName, setColorName] = useState('');
+  const [colorToDelete, setColorToDelete] = useState<IColor | null>(null);
 
   const { 
     currentPage, 
@@ -84,10 +96,12 @@ function Color() {
       if (response.success) {
         queryClient.invalidateQueries({ queryKey: ['colors'] });
         toast.success('Color deleted successfully');
+        setColorToDelete(null);
       }
     },
     onError: () => {
       toast.error('Failed to delete color');
+      setColorToDelete(null);
     }
   });
 
@@ -101,6 +115,16 @@ function Color() {
     setEditingColor(color);
     setColorName(color.color);
     toggleBar();
+  };
+
+  const handleDeleteClick = (color: IColor) => {
+    setColorToDelete(color);
+  };
+
+  const handleConfirmDelete = () => {
+    if (colorToDelete) {
+      deleteMutation.mutate(colorToDelete.id);
+    }
   };
 
   const handleSubmit = () => {
@@ -163,14 +187,35 @@ function Color() {
                           >
                             <Pencil className="h-4 w-4" />
                           </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => deleteMutation.mutate(color.id)}
-                            disabled={deleteMutation.isPending}
-                          >
-                            <Trash2 className="h-4 w-4 text-red-500" />
-                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleDeleteClick(color)}
+                                disabled={deleteMutation.isPending}
+                              >
+                                <Trash2 className="h-4 w-4 text-red-500" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This action cannot be undone. This will permanently delete the color {color.color}.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction 
+                                  onClick={handleConfirmDelete}
+                                  className="bg-red-600 hover:bg-red-700 text-white"
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       </TableCell>
                     </TableRow>
