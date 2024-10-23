@@ -110,6 +110,9 @@ const Client: React.FC = () => {
     blockedCount: 0 
   };
 
+
+ 
+
   const displayedUsers = activeTab === 'aktivlar' ? activeUsers : blockedUsers;
   const displayedCount = activeTab === 'aktivlar' ? activeCount : blockedCount;
 
@@ -127,7 +130,7 @@ const Client: React.FC = () => {
           </div>
           <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'aktivlar' | 'bloklanganlar')} className="w-full">
             <TabsList className="mb-4">
-              <TabsTrigger value="aktivlar">Aktivlar ({activeCount})</TabsTrigger>
+              <TabsTrigger value="aktivlar">Aktivlar ({activeUsers.length || 0})</TabsTrigger>
               <TabsTrigger value="bloklanganlar">Bloklanganlar ({blockedCount})</TabsTrigger>
             </TabsList>
             <TabsContent value="aktivlar">
