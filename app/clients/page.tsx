@@ -109,8 +109,6 @@ const Client: React.FC = () => {
     activeCount: 0, 
     blockedCount: 0 
   };
-
-
  
 
   const displayedUsers = activeTab === 'aktivlar' ? activeUsers : blockedUsers;
